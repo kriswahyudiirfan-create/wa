@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MyWa</title>
+    <title>MyWA Buatan</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
@@ -335,13 +335,17 @@
             fileInput.value = "";
         }
 
-        // FUNGSI KUNCI: Menunggu pesan masuk dari ID lain secara Real-Time
+        // FUNGSI DIPERBARUI: Menunggu pesan masuk dan memberi kesempatan penerima memberi nama
         function listenGlobal() {
             db.ref(`chats/${myID}`).on('child_added', snap => {
                 let foreignID = snap.key;
                 // Jika ada ID baru mengirim pesan dan belum ada di daftar kontak kita
                 if(!contacts[foreignID] && foreignID !== myID) {
-                    contacts[foreignID] = foreignID; // Simpan ID sebagai nama default
+                    // Beri notifikasi/prompt ke penerima untuk simpan nama khusus
+                    let askAlias = prompt(`Ada pesan masuk dari ID: ${foreignID}\nBeri nama untuk kontak ini agar mudah dikenali:`);
+                    
+                    // Simpan alias sesuai input, jika kosong gunakan ID saja
+                    contacts[foreignID] = askAlias || foreignID;
                     localStorage.setItem('my_contacts', JSON.stringify(contacts));
                     renderContacts(); // Gambar ulang daftar kontak agar muncul
                 }
