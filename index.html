@@ -13,6 +13,26 @@
         body { background-color: #0b141a; color: #e9edef; overflow: hidden; }
         .hidden { display: none !important; }
 
+        /* Animasi Mata (Selalu Ada) */
+        .eye-container {
+            position: fixed; top: 15px; left: 15px; width: 40px; height: 20px;
+            display: flex; gap: 8px; z-index: 2000; pointer-events: none;
+        }
+        .eye {
+            width: 15px; height: 15px; background: white; border-radius: 50%;
+            position: relative; display: flex; align-items: center; justify-content: center;
+        }
+        .pupil {
+            width: 6px; height: 6px; background: #000; border-radius: 50%;
+            animation: lookAround 3s infinite;
+        }
+        @keyframes lookAround {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(3px, -2px); }
+            50% { transform: translate(-3px, 2px); }
+            75% { transform: translate(0, 3px); }
+        }
+
         /* Animasi Selamat Datang */
         #welcome-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -46,16 +66,34 @@
             50% { transform: translateY(0); opacity: 1; }
         }
 
-        #contact-container {
-            flex: 1; overflow-y: auto; padding: 10px;
-            border: 2px solid rgba(0, 168, 132, 0.2); margin: 10px; border-radius: 15px;
+        /* Border Memutari Kontak */
+        #contact-outer {
+            flex: 1; margin: 10px; border-radius: 15px; position: relative; padding: 3px;
+            overflow: hidden; background: rgba(32, 44, 51, 0.5);
         }
+        #contact-outer::before {
+            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(transparent, transparent, transparent, #00a884);
+            animation: rotateBorder 4s linear infinite, fadeBorder 8s linear infinite;
+        }
+        @keyframes rotateBorder { 100% { transform: rotate(360deg); } }
+        @keyframes fadeBorder { 0%, 100% { opacity: 0; } 40%, 60% { opacity: 1; } }
+
+        #contact-container {
+            position: relative; height: 100%; width: 100%; background: #0b141a;
+            border-radius: 13px; overflow-y: auto; padding: 10px; z-index: 1;
+        }
+
+        /* Search Bar */
+        .search-box { padding: 10px; background: #111b21; }
+        .search-box input { width: 100%; padding: 8px; border-radius: 5px; border: none; background: #2a3942; color: white; }
 
         .contact-card {
             background: #111b21; padding: 15px; border-bottom: 1px solid #222d34;
             display: flex; justify-content: space-between; align-items: center;
             border-radius: 10px; margin-bottom: 5px;
         }
+        .my-self-card { border: 1px solid #00a884; background: #1a2a24; }
         .contact-info b { display: block; color: #e9edef; }
         .contact-info span { font-size: 12px; color: #8696a0; }
         .last-msg { font-size: 13px; color: #00a884; margin-top: 4px; }
@@ -73,9 +111,7 @@
         .msg-time { font-size: 10px; color: #8696a0; text-align: right; margin-top: 4px; }
         
         .status-icon { font-size: 12px; margin-left: 5px; }
-        .c1 { color: #8696a0; } /* Centang 1 */
-        .c2 { color: #8696a0; } /* Centang 2 Abu */
-        .c3 { color: #53bdeb; } /* Centang 2 Biru */
+        .c1 { color: #8696a0; } .c2 { color: #8696a0; } .c3 { color: #53bdeb; }
 
         .input-bar { background: #202c33; padding: 10px; display: flex; align-items: center; }
         .input-bar input { flex: 1; background: #2a3942; border: none; padding: 10px; border-radius: 8px; color: white; }
@@ -87,29 +123,41 @@
 </head>
 <body>
 
+    <div class="eye-container">
+        <div class="eye"><div class="pupil"></div></div>
+        <div class="eye"><div class="pupil"></div></div>
+    </div>
+
     <div id="welcome-layer"><div class="welcome-text">SELAMAT DATANG</div></div>
 
     <div id="auth-screen" class="hidden">
         <h2>Bikin ID Permanen</h2>
         <input type="text" id="my-id-input" placeholder="Huruf atau Angka...">
         <br>
-        <button onclick="saveID()">BUAT ID</button>
+        <button id="btn-buat-id" onclick="saveID()">BUAT ID</button>
     </div>
 
     <div id="app" class="hidden">
         <header>
             <div id="cool-anim">SISTEM AKTIF • TERENKRIPSI</div>
-            <h3>MyWA</h3>
+            <h3>Daftar Kontak</h3>
             <button onclick="openAddContact()" style="position:absolute; right:10px; top:12px; padding:5px 10px;">+ ID</button>
         </header>
-        <div id="contact-container">
-            <div id="list-kontak"></div>
+
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Cari Nama atau ID..." oninput="renderContacts()">
+        </div>
+
+        <div id="contact-outer">
+            <div id="contact-container">
+                <div id="list-kontak"></div>
+            </div>
         </div>
     </div>
 
     <div id="chat-window" class="hidden">
         <header style="display:flex; align-items:center;">
-            <button onclick="closeChat()" style="background:none; font-size:20px; margin-right:10px;">←</button>
+            <button onclick="closeChat()" style="background:none; border:none; color:white; font-size:20px; margin-right:10px;">←</button>
             <div id="chat-target-info"></div>
         </header>
         <div id="msg-area"></div>
@@ -140,7 +188,6 @@
         let activeChatID = null;
         let contacts = JSON.parse(localStorage.getItem('my_contacts') || '{}');
 
-        // --- FITUR KEAMANAN: ENKRIPSI ---
         function encryptText(text) {
             try { return btoa(unescape(encodeURIComponent(text))); } catch(e) { return text; }
         }
@@ -148,7 +195,7 @@
             try { return decodeURIComponent(escape(atob(encoded))); } catch(e) { return encoded; }
         }
 
-        // 1. ANIMASI & AUTH
+        // Animasi Splash
         setTimeout(() => {
             document.getElementById('welcome-layer').style.opacity = '0';
             setTimeout(() => {
@@ -161,18 +208,29 @@
             }, 1000);
         }, 2000);
 
+        // Perbaikan Save ID: Langsung respon tanpa ganti angka
         function saveID() {
             let id = document.getElementById('my-id-input').value.trim();
             if (!id) return;
+            
+            const btn = document.getElementById('btn-buat-id');
+            btn.innerText = "Mengecek...";
+            btn.disabled = true;
+
             db.ref('users/' + id).get().then(snap => {
                 if (snap.exists()) {
                     alert("ID sudah ada pemiliknya!");
+                    btn.innerText = "BUAT ID";
+                    btn.disabled = false;
                 } else {
                     db.ref('users/' + id).set({ status: 'online' });
                     localStorage.setItem('my_wa_id', id);
                     myID = id;
                     startApp();
                 }
+            }).catch(() => {
+                btn.innerText = "BUAT ID";
+                btn.disabled = false;
             });
         }
 
@@ -185,7 +243,6 @@
             window.onbeforeunload = () => db.ref('users/' + myID).update({ status: 'offline' });
         }
 
-        // 2. KONTAK & NAMA KHUSUS
         function openAddContact() {
             let target = prompt("Masukkan ID tujuan:");
             if (!target || target == myID) return;
@@ -205,36 +262,56 @@
 
         function renderContacts() {
             const list = document.getElementById('list-kontak');
+            const search = document.getElementById('search-input').value.toLowerCase();
             list.innerHTML = '';
-            for (let id in contacts) {
-                db.ref(`chats/${myID}/${id}`).limitToLast(1).on('value', snap => {
-                    let lastMsg = "Belum ada chat";
-                    snap.forEach(c => {
-                        let val = c.val();
-                        lastMsg = val.type === 'text' ? decryptText(val.text) : "📎 File/Gambar";
-                    });
-                    
-                    let html = `
-                        <div class="contact-card" onclick="openChat('${id}')">
-                            <div class="contact-info">
-                                <b>${contacts[id]}</b>
-                                <span>ID: ${id}</span>
-                                <div class="last-msg">${lastMsg}</div>
-                            </div>
-                            <button onclick="event.stopPropagation(); deleteContact('${id}')" style="background:red; padding:3px 7px; font-size:10px;">X</button>
+
+            // Tampilkan ID Sendiri Paling Atas
+            if (!search || myID.toLowerCase().includes(search) || "saya".includes(search)) {
+                list.innerHTML += `
+                    <div class="contact-card my-self-card" onclick="openChat('${myID}')">
+                        <div class="contact-info">
+                            <b>Saya (ID Sendiri)</b>
+                            <span>ID: ${myID}</span>
+                            <div class="last-msg">Ruang simpan pesan sendiri</div>
                         </div>
-                    `;
-                    let old = document.getElementById('card-' + id);
-                    if(old) old.outerHTML = html; else list.innerHTML += `<div id="card-${id}">${html}</div>`;
-                });
+                    </div>
+                `;
+            }
+
+            // Tampilkan Kontak Lain
+            for (let id in contacts) {
+                let alias = contacts[id];
+                if (id.toLowerCase().includes(search) || alias.toLowerCase().includes(search)) {
+                    db.ref(`chats/${myID}/${id}`).limitToLast(1).on('value', snap => {
+                        let lastMsg = "Belum ada chat";
+                        snap.forEach(c => {
+                            let val = c.val();
+                            lastMsg = val.type === 'text' ? decryptText(val.text) : "📎 File/Gambar";
+                        });
+                        
+                        let html = `
+                            <div class="contact-card" onclick="openChat('${id}')">
+                                <div class="contact-info">
+                                    <b>${alias}</b>
+                                    <span>ID: ${id}</span>
+                                    <div class="last-msg">${lastMsg}</div>
+                                </div>
+                                <button onclick="event.stopPropagation(); deleteContact('${id}')" style="background:red; padding:3px 7px; font-size:10px;">X</button>
+                            </div>
+                        `;
+                        let old = document.getElementById('card-' + id);
+                        if(old) old.outerHTML = `<div id="card-${id}">${html}</div>`; 
+                        else list.innerHTML += `<div id="card-${id}">${html}</div>`;
+                    });
+                }
             }
         }
 
-        // 3. CHAT LOGIC
         function openChat(id) {
             activeChatID = id;
             document.getElementById('chat-window').classList.remove('hidden');
-            document.getElementById('chat-target-info').innerHTML = `<b>${contacts[id]}</b><br><small>${id}</small>`;
+            let displayName = id === myID ? "Simpan Pesan (Saya)" : (contacts[id] || id);
+            document.getElementById('chat-target-info').innerHTML = `<b>${displayName}</b><br><small>${id}</small>`;
             loadMessages(id);
         }
 
@@ -253,12 +330,9 @@
         function pushMsg(data) {
             let now = new Date();
             let timestamp = now.getTime();
-            let dateStr = now.getDate() + "/" + (now.getMonth()+1) + "/" + now.getFullYear() + " " + now.getHours() + ":" + now.getMinutes();
+            let dateStr = now.getDate() + "/" + (now.getMonth()+1) + " " + now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
             
-            // Enkripsi jika tipe pesan adalah text
-            if(data.type === 'text') {
-                data.text = encryptText(data.text);
-            }
+            if(data.type === 'text') { data.text = encryptText(data.text); }
 
             let payload = {
                 ...data,
@@ -269,7 +343,9 @@
             };
 
             db.ref(`chats/${myID}/${activeChatID}`).push(payload);
-            db.ref(`chats/${activeChatID}/${myID}`).push(payload);
+            if(activeChatID !== myID) {
+                db.ref(`chats/${activeChatID}/${myID}`).push(payload);
+            }
         }
 
         function loadMessages(target) {
@@ -279,19 +355,12 @@
                 snap.forEach(child => {
                     let m = child.val();
                     let isMe = m.sender === myID;
-                    
-                    let statusClass = "c1";
-                    if(m.status === 2) statusClass = "c2";
-                    if(m.status === 3) statusClass = "c3";
+                    let statusClass = m.status === 3 ? "c3" : (m.status === 2 ? "c2" : "c1");
 
                     let content = "";
-                    if(m.type === 'text') {
-                        content = decryptText(m.text);
-                    } else if(m.type === 'image') {
-                        content = `<img src="${m.url}" class="chat-img"><a href="${m.url}" download class="download-btn">Download Gambar</a>`;
-                    } else if(m.type === 'file') {
-                        content = `📄 File: <a href="${m.url}" target="_blank" class="download-btn">Download File</a>`;
-                    }
+                    if(m.type === 'text') { content = decryptText(m.text); }
+                    else if(m.type === 'image') { content = `<img src="${m.url}" class="chat-img"><a href="${m.url}" download class="download-btn">Download Gambar</a>`; }
+                    else if(m.type === 'file') { content = `📄 File: <a href="${m.url}" target="_blank" class="download-btn">Download File</a>`; }
 
                     area.innerHTML += `
                         <div class="msg-bubble ${isMe ? 'msg-me' : 'msg-them'}">
@@ -327,7 +396,7 @@
         function listenGlobal() {
             db.ref(`chats/${myID}`).on('child_added', snap => {
                 let foreignID = snap.key;
-                if(!contacts[foreignID]) {
+                if(!contacts[foreignID] && foreignID !== myID) {
                     contacts[foreignID] = "ID Asing";
                     localStorage.setItem('my_contacts', JSON.stringify(contacts));
                     renderContacts();
