@@ -13,36 +13,39 @@
         body { background-color: #0b141a; color: #e9edef; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* Animasi Mata (Selalu Ada) */
+        /* Animasi Mata */
         .eye-container {
-            position: fixed; top: 15px; left: 15px; width: 40px; height: 20px;
-            display: flex; gap: 8px; z-index: 2000; pointer-events: none;
+            position: fixed; top: 15px; left: 15px; width: 60px; height: 35px;
+            display: flex; gap: 12px; z-index: 2000; pointer-events: none;
         }
         .eye {
-            width: 15px; height: 15px; background: white; border-radius: 50%;
+            width: 22px; height: 18px; background: #fff; border-radius: 50% 50% 40% 40%;
             position: relative; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border: 1.5px solid #ff0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+            animation: blinkEye 4s infinite;
         }
         .pupil {
-            width: 6px; height: 6px; background: #000; border-radius: 50%;
-            animation: lookAround 3s infinite;
+            width: 9px; height: 9px; background: #000; border-radius: 50%;
+            border: 2px solid #ff0000;
+            animation: creepyLook 3s infinite;
         }
-        @keyframes lookAround {
-            0%, 100% { transform: translate(0, 0); }
-            25% { transform: translate(3px, -2px); }
-            50% { transform: translate(-3px, 2px); }
-            75% { transform: translate(0, 3px); }
+        @keyframes blinkEye { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+        @keyframes creepyLook {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(5px, -3px); }
+            40% { transform: translate(-5px, 3px) scale(1.2); }
+            60% { transform: translate(0, 5px); }
+            100% { transform: translate(0, 0); }
         }
 
-        /* Animasi Selamat Datang */
+        /* Welcome Screen */
         #welcome-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #0b141a; display: flex; justify-content: center; align-items: center;
             z-index: 1000; transition: opacity 1s;
         }
-        .welcome-text {
-            font-size: 24px; font-weight: bold; color: #00a884;
-            animation: pulse 1.5s infinite;
-        }
+        .welcome-text { font-size: 24px; font-weight: bold; color: #00a884; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
         /* Auth Screen */
@@ -53,7 +56,7 @@
         }
         button { background: #00a884; border: none; padding: 10px 20px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
 
-        /* Beranda */
+        /* Main App */
         #app { display: flex; flex-direction: column; height: 100vh; }
         header { background: #202c33; padding: 15px; text-align: center; position: relative; }
         
@@ -66,59 +69,60 @@
             50% { transform: translateY(0); opacity: 1; }
         }
 
-        /* Border Memutari Kontak */
+        /* Contact List */
         #contact-outer {
-            flex: 1; margin: 10px; border-radius: 15px; position: relative; padding: 3px;
+            flex: 1; margin: 10px; border-radius: 15px; position: relative; padding: 4px;
             overflow: hidden; background: rgba(32, 44, 51, 0.5);
         }
         #contact-outer::before {
             content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: conic-gradient(transparent, transparent, transparent, #00a884);
-            animation: rotateBorder 4s linear infinite, fadeBorder 8s linear infinite;
+            background: conic-gradient(transparent, transparent, transparent, #00ffcc);
+            animation: rotateBorder 3s linear infinite;
         }
         @keyframes rotateBorder { 100% { transform: rotate(360deg); } }
-        @keyframes fadeBorder { 0%, 100% { opacity: 0; } 40%, 60% { opacity: 1; } }
 
         #contact-container {
             position: relative; height: 100%; width: 100%; background: #0b141a;
-            border-radius: 13px; overflow-y: auto; padding: 10px; z-index: 1;
+            border-radius: 10px; overflow-y: auto; padding: 5px; z-index: 1;
         }
 
-        /* Search Bar */
         .search-box { padding: 10px; background: #111b21; }
         .search-box input { width: 100%; padding: 8px; border-radius: 5px; border: none; background: #2a3942; color: white; }
 
         .contact-card {
-            background: #111b21; padding: 15px; border-bottom: 1px solid #222d34;
+            background: #111b21; padding: 12px; border-bottom: 1px solid #222d34;
             display: flex; justify-content: space-between; align-items: center;
-            border-radius: 10px; margin-bottom: 5px;
+            border-radius: 8px; margin-bottom: 5px; transition: 0.3s;
         }
-        .my-self-card { border: 1px solid #00a884; background: #1a2a24; }
-        .contact-info b { display: block; color: #e9edef; }
-        .contact-info span { font-size: 12px; color: #8696a0; }
-        .last-msg { font-size: 13px; color: #00a884; margin-top: 4px; }
+        .my-self-card { border-left: 4px solid #00a884; background: #1a2a24; }
+        .contact-info { flex: 1; cursor: pointer; }
+        .contact-info b { display: block; color: #e9edef; font-size: 16px; }
+        .contact-info span { font-size: 12px; color: #8696a0; display: block; margin: 2px 0; }
+        .last-msg { font-size: 13px; color: #00a884; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+        
+        .btn-del { 
+            background: none; border: none; color: #ef5350; font-size: 18px; 
+            padding: 10px; cursor: pointer; opacity: 0.6; 
+        }
+        .btn-del:hover { opacity: 1; }
 
         /* Chat Window */
         #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b141a; z-index: 100; display: flex; flex-direction: column; }
         #msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
         
-        .msg-bubble { 
-            max-width: 70%; padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; position: relative;
-            word-wrap: break-word;
-        }
+        .msg-bubble { max-width: 75%; padding: 10px; border-radius: 10px; margin-bottom: 8px; position: relative; word-wrap: break-word; }
         .msg-me { align-self: flex-end; background: #005c4b; }
         .msg-them { align-self: flex-start; background: #202c33; }
-        .msg-time { font-size: 10px; color: #8696a0; text-align: right; margin-top: 4px; }
-        
+        .msg-time { font-size: 10px; color: #8696a0; text-align: right; margin-top: 5px; }
         .status-icon { font-size: 12px; margin-left: 5px; }
         .c1 { color: #8696a0; } .c2 { color: #8696a0; } .c3 { color: #53bdeb; }
 
         .input-bar { background: #202c33; padding: 10px; display: flex; align-items: center; }
         .input-bar input { flex: 1; background: #2a3942; border: none; padding: 10px; border-radius: 8px; color: white; }
-        .file-btn { margin-right: 10px; font-size: 20px; cursor: pointer; }
+        .file-btn { margin-right: 10px; font-size: 22px; cursor: pointer; }
 
-        img.chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; }
-        .download-btn { font-size: 11px; color: #53bdeb; text-decoration: none; display: block; margin-top: 5px; }
+        .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; border: 1px solid #333; }
+        .download-link { color: #53bdeb; font-size: 12px; text-decoration: none; margin-top: 5px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -156,8 +160,8 @@
     </div>
 
     <div id="chat-window" class="hidden">
-        <header style="display:flex; align-items:center;">
-            <button onclick="closeChat()" style="background:none; border:none; color:white; font-size:20px; margin-right:10px;">←</button>
+        <header style="display:flex; align-items:center; background:#202c33; padding:10px;">
+            <button onclick="closeChat()" style="background:none; border:none; color:white; font-size:20px; margin-right:15px;">←</button>
             <div id="chat-target-info"></div>
         </header>
         <div id="msg-area"></div>
@@ -169,7 +173,6 @@
     </div>
 
     <script>
-        // CONFIG FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBndqyGrpv7D-gelmif8YELzs-EJj237MA",
             authDomain: "mywa-irfank.firebaseapp.com",
@@ -188,49 +191,30 @@
         let activeChatID = null;
         let contacts = JSON.parse(localStorage.getItem('my_contacts') || '{}');
 
-        function encryptText(text) {
-            try { return btoa(unescape(encodeURIComponent(text))); } catch(e) { return text; }
-        }
-        function decryptText(encoded) {
-            try { return decodeURIComponent(escape(atob(encoded))); } catch(e) { return encoded; }
-        }
+        function encryptText(text) { try { return btoa(unescape(encodeURIComponent(text))); } catch(e) { return text; } }
+        function decryptText(encoded) { try { return decodeURIComponent(escape(atob(encoded))); } catch(e) { return encoded; } }
 
-        // Animasi Splash
+        // Start Logic
         setTimeout(() => {
             document.getElementById('welcome-layer').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('welcome-layer').classList.add('hidden');
-                if (!myID) {
-                    document.getElementById('auth-screen').classList.remove('hidden');
-                } else {
-                    startApp();
-                }
+                if (!myID) document.getElementById('auth-screen').classList.remove('hidden');
+                else startApp();
             }, 1000);
         }, 2000);
 
-        // Perbaikan Save ID: Langsung respon tanpa ganti angka
         function saveID() {
             let id = document.getElementById('my-id-input').value.trim();
             if (!id) return;
-            
-            const btn = document.getElementById('btn-buat-id');
-            btn.innerText = "Mengecek...";
-            btn.disabled = true;
-
             db.ref('users/' + id).get().then(snap => {
-                if (snap.exists()) {
-                    alert("ID sudah ada pemiliknya!");
-                    btn.innerText = "BUAT ID";
-                    btn.disabled = false;
-                } else {
+                if (snap.exists()) { alert("ID sudah ada pemiliknya!"); }
+                else {
                     db.ref('users/' + id).set({ status: 'online' });
                     localStorage.setItem('my_wa_id', id);
                     myID = id;
                     startApp();
                 }
-            }).catch(() => {
-                btn.innerText = "BUAT ID";
-                btn.disabled = false;
             });
         }
 
@@ -240,20 +224,19 @@
             renderContacts();
             listenGlobal();
             db.ref('users/' + myID).update({ status: 'online' });
-            window.onbeforeunload = () => db.ref('users/' + myID).update({ status: 'offline' });
         }
 
         function openAddContact() {
             let target = prompt("Masukkan ID tujuan:");
             if (!target || target == myID) return;
-            let alias = prompt("Beri nama khusus:");
+            let alias = prompt("Beri nama khusus (Alias):");
             contacts[target] = alias || target;
             localStorage.setItem('my_contacts', JSON.stringify(contacts));
             renderContacts();
         }
 
         function deleteContact(id) {
-            if(confirm("Hapus kontak ini?")) {
+            if (confirm(`Hapus ${contacts[id] || id} dari daftar?`)) {
                 delete contacts[id];
                 localStorage.setItem('my_contacts', JSON.stringify(contacts));
                 renderContacts();
@@ -265,43 +248,43 @@
             const search = document.getElementById('search-input').value.toLowerCase();
             list.innerHTML = '';
 
-            // Tampilkan ID Sendiri Paling Atas
+            // Chat Sendiri
             if (!search || myID.toLowerCase().includes(search) || "saya".includes(search)) {
                 list.innerHTML += `
-                    <div class="contact-card my-self-card" onclick="openChat('${myID}')">
-                        <div class="contact-info">
-                            <b>Saya (ID Sendiri)</b>
+                    <div class="contact-card my-self-card">
+                        <div class="contact-info" onclick="openChat('${myID}')">
+                            <b>Saya (Simpan Pesan)</b>
                             <span>ID: ${myID}</span>
-                            <div class="last-msg">Ruang simpan pesan sendiri</div>
+                            <div class="last-msg">Catatan pribadi kamu</div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
 
-            // Tampilkan Kontak Lain
             for (let id in contacts) {
                 let alias = contacts[id];
                 if (id.toLowerCase().includes(search) || alias.toLowerCase().includes(search)) {
+                    let cardID = 'card-' + id.replace(/\s+/g, '-');
+                    list.innerHTML += `<div id="${cardID}"></div>`;
+                    
                     db.ref(`chats/${myID}/${id}`).limitToLast(1).on('value', snap => {
-                        let lastMsg = "Belum ada chat";
+                        let lastMsg = "Belum ada pesan";
                         snap.forEach(c => {
                             let val = c.val();
-                            lastMsg = val.type === 'text' ? decryptText(val.text) : "📎 File/Gambar";
+                            lastMsg = val.type === 'text' ? decryptText(val.text) : "📎 Media/File";
                         });
                         
-                        let html = `
-                            <div class="contact-card" onclick="openChat('${id}')">
-                                <div class="contact-info">
+                        const targetDiv = document.getElementById(cardID);
+                        if (targetDiv) {
+                            targetDiv.innerHTML = `
+                            <div class="contact-card">
+                                <div class="contact-info" onclick="openChat('${id}')">
                                     <b>${alias}</b>
                                     <span>ID: ${id}</span>
                                     <div class="last-msg">${lastMsg}</div>
                                 </div>
-                                <button onclick="event.stopPropagation(); deleteContact('${id}')" style="background:red; padding:3px 7px; font-size:10px;">X</button>
-                            </div>
-                        `;
-                        let old = document.getElementById('card-' + id);
-                        if(old) old.outerHTML = `<div id="card-${id}">${html}</div>`; 
-                        else list.innerHTML += `<div id="card-${id}">${html}</div>`;
+                                <button class="btn-del" onclick="deleteContact('${id}')">✕</button>
+                            </div>`;
+                        }
                     });
                 }
             }
@@ -310,15 +293,12 @@
         function openChat(id) {
             activeChatID = id;
             document.getElementById('chat-window').classList.remove('hidden');
-            let displayName = id === myID ? "Simpan Pesan (Saya)" : (contacts[id] || id);
-            document.getElementById('chat-target-info').innerHTML = `<b>${displayName}</b><br><small>${id}</small>`;
+            let displayName = id === myID ? "Simpan Pesan" : (contacts[id] || id);
+            document.getElementById('chat-target-info').innerHTML = `<b>${displayName}</b><br><small style="color:#8696a0">${id}</small>`;
             loadMessages(id);
         }
 
-        function closeChat() {
-            activeChatID = null;
-            document.getElementById('chat-window').classList.add('hidden');
-        }
+        function closeChat() { activeChatID = null; document.getElementById('chat-window').classList.add('hidden'); }
 
         function sendText() {
             let txt = document.getElementById('text-input').value;
@@ -329,23 +309,12 @@
 
         function pushMsg(data) {
             let now = new Date();
-            let timestamp = now.getTime();
-            let dateStr = now.getDate() + "/" + (now.getMonth()+1) + " " + now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+            let dateStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+            if(data.type === 'text') data.text = encryptText(data.text);
             
-            if(data.type === 'text') { data.text = encryptText(data.text); }
-
-            let payload = {
-                ...data,
-                sender: myID,
-                time: dateStr,
-                ts: timestamp,
-                status: 1 
-            };
-
+            let payload = { ...data, sender: myID, time: dateStr, ts: Date.now(), status: 1 };
             db.ref(`chats/${myID}/${activeChatID}`).push(payload);
-            if(activeChatID !== myID) {
-                db.ref(`chats/${activeChatID}/${myID}`).push(payload);
-            }
+            if(activeChatID !== myID) db.ref(`chats/${activeChatID}/${myID}`).push(payload);
         }
 
         function loadMessages(target) {
@@ -355,40 +324,32 @@
                 snap.forEach(child => {
                     let m = child.val();
                     let isMe = m.sender === myID;
+                    let content = m.type === 'text' ? `<div>${decryptText(m.text)}</div>` : 
+                                  m.type === 'image' ? `<img src="${m.url}" class="chat-img" onclick="window.open('${m.url}')"><br><a href="${m.url}" target="_blank" class="download-link">Unduh</a>` : 
+                                  `<div style="background:rgba(0,0,0,0.2);padding:5px;border-radius:5px">📄 ${m.fileName}</div><a href="${m.url}" target="_blank" class="download-link">Buka File</a>`;
+                    
                     let statusClass = m.status === 3 ? "c3" : (m.status === 2 ? "c2" : "c1");
-
-                    let content = "";
-                    if(m.type === 'text') { content = decryptText(m.text); }
-                    else if(m.type === 'image') { content = `<img src="${m.url}" class="chat-img"><a href="${m.url}" download class="download-btn">Download Gambar</a>`; }
-                    else if(m.type === 'file') { content = `📄 File: <a href="${m.url}" target="_blank" class="download-btn">Download File</a>`; }
-
                     area.innerHTML += `
                         <div class="msg-bubble ${isMe ? 'msg-me' : 'msg-them'}">
                             ${content}
                             <div class="msg-time">
-                                ${m.time} 
-                                ${isMe ? `<span class="status-icon ${statusClass}">✓✓</span>` : ''}
+                                ${m.time} ${isMe ? `<span class="status-icon ${statusClass}">✓✓</span>` : ''}
                             </div>
-                        </div>
-                    `;
-                    
-                    if(!isMe && m.status < 3) {
-                        db.ref(`chats/${myID}/${target}/${child.key}`).update({ status: 3 });
-                        db.ref(`chats/${target}/${myID}/${child.key}`).update({ status: 3 });
-                    }
+                        </div>`;
                 });
                 area.scrollTop = area.scrollHeight;
             });
         }
 
         function uploadFile() {
-            let file = document.getElementById('file-input').files[0];
+            let fileInput = document.getElementById('file-input');
+            let file = fileInput.files[0];
             if(!file) return;
-            let ref = storage.ref(`files/${Date.now()}_${file.name}`);
+            let ref = storage.ref(`uploads/${Date.now()}_${file.name}`);
             ref.put(file).then(snap => {
                 snap.ref.getDownloadURL().then(url => {
-                    let type = file.type.includes('image') ? 'image' : 'file';
-                    pushMsg({ url: url, type: type, text: file.name });
+                    pushMsg({ url: url, type: file.type.includes('image') ? 'image' : 'file', fileName: file.name });
+                    fileInput.value = "";
                 });
             });
         }
@@ -397,8 +358,7 @@
             db.ref(`chats/${myID}`).on('child_added', snap => {
                 let foreignID = snap.key;
                 if(!contacts[foreignID] && foreignID !== myID) {
-                    contacts[foreignID] = "ID Asing";
-                    localStorage.setItem('my_contacts', JSON.stringify(contacts));
+                    contacts[foreignID] = foreignID;
                     renderContacts();
                 }
             });
