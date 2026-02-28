@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MyWA</title>
+    <title>MyWa</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
@@ -12,6 +12,29 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0b141a; color: #e9edef; overflow: hidden; }
         .hidden { display: none !important; }
+
+        /* Fix Border Chrome vs Browser Lain */
+        #contact-outer { 
+            flex: 1; 
+            margin: 10px; 
+            border-radius: 15px; 
+            position: relative; 
+            padding: 2px; /* Perkecil padding agar border tidak offset */
+            overflow: hidden; 
+            background: #202c33; /* Warna dasar solid */
+        }
+        
+        #contact-outer::before { 
+            content: ""; 
+            position: absolute; 
+            top: -50%; 
+            left: -50%; 
+            width: 200%; 
+            height: 200%; 
+            background: conic-gradient(transparent, transparent, transparent, #00ffcc); 
+            animation: rotateBorder 3s linear infinite; 
+            z-index: 0;
+        }
 
         /* Animasi Mata */
         .eye-container { position: fixed; top: 15px; left: 15px; width: 60px; height: 35px; display: flex; gap: 12px; z-index: 2000; pointer-events: none; }
@@ -36,11 +59,8 @@
         #cool-anim { font-size: 14px; color: #00a884; position: absolute; width: 100%; top: 5px; left: 0; animation: slideToggle 2s infinite; }
         @keyframes slideToggle { 0%, 100% { transform: translateY(-20px); opacity: 0; } 50% { transform: translateY(0); opacity: 1; } }
 
-        /* Contact List */
-        #contact-outer { flex: 1; margin: 10px; border-radius: 15px; position: relative; padding: 4px; overflow: hidden; background: rgba(32, 44, 51, 0.5); }
-        #contact-outer::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, transparent, #00ffcc); animation: rotateBorder 3s linear infinite; }
         @keyframes rotateBorder { 100% { transform: rotate(360deg); } }
-        #contact-container { position: relative; height: 100%; width: 100%; background: #0b141a; border-radius: 10px; overflow-y: auto; padding: 5px; z-index: 1; }
+        #contact-container { position: relative; height: 100%; width: 100%; background: #0b141a; border-radius: 12px; overflow-y: auto; padding: 5px; z-index: 1; }
 
         .search-box { padding: 10px; background: #111b21; }
         .search-box input { width: 100%; padding: 8px; border-radius: 5px; border: none; background: #2a3942; color: white; }
@@ -78,7 +98,7 @@
         <div class="eye"><div class="pupil"></div></div>
     </div>
 
-    <div id="welcome-layer"><div class="welcome-text">SELAMAT DATANG</div></div>
+    <div id="welcome-layer"><div class="welcome-text">Hallo, SELAMAT DATANG</div></div>
 
     <div id="auth-screen" class="hidden">
         <h2>Bikin ID Permanen</h2>
@@ -159,7 +179,7 @@
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
             renderContacts();
-            listenGlobal();
+            listenGlobal(); // Inilah fungsi yang menangkap chat dari ID lain
             db.ref('users/' + myID).update({ status: 'online' });
         }
 
@@ -247,7 +267,11 @@
             let fullDate = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             if(data.type === 'text') data.text = encryptText(data.text);
             let payload = { ...data, sender: myID, time: dateStr, fullDate: fullDate, ts: Date.now(), status: 1 };
+            
+            // Simpan di sisi pengirim
             db.ref(`chats/${myID}/${activeChatID}`).push(payload);
+            
+            // Simpan di sisi penerima
             if(activeChatID !== myID) {
                 db.ref(`chats/${activeChatID}/${myID}`).push(payload);
             }
@@ -255,6 +279,8 @@
 
         function loadMessages(target) {
             const area = document.getElementById('msg-area');
+            // Matikan listener lama sebelum buka chat baru agar tidak tumpang tindih
+            db.ref(`chats/${myID}/${target}`).off();
             db.ref(`chats/${myID}/${target}`).on('value', snap => {
                 area.innerHTML = '';
                 snap.forEach(child => {
@@ -288,52 +314,36 @@
             let fileInput = document.getElementById('file-input');
             let file = fileInput.files[0];
             if(!file) return;
-
             let fileName = file.name;
             let isImg = file.type.includes('image');
-
-            // Gunakan FileReader untuk preview instan tanpa menunggu upload
             let reader = new FileReader();
             reader.onload = function(e) {
                 let instantUrl = e.target.result;
                 let now = new Date();
                 let dateStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
                 let fullDate = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                
-                let payload = { 
-                    url: instantUrl, 
-                    type: isImg ? 'image' : 'file', 
-                    fileName: fileName,
-                    sender: myID, 
-                    time: dateStr, 
-                    fullDate: fullDate, 
-                    ts: Date.now(), 
-                    status: 1 
-                };
-
-                // Push data awal agar langsung muncul
+                let payload = { url: instantUrl, type: isImg ? 'image' : 'file', fileName: fileName, sender: myID, time: dateStr, fullDate: fullDate, ts: Date.now(), status: 1 };
                 let myMsgRef = db.ref(`chats/${myID}/${activeChatID}`).push(payload);
                 let targetMsgRef = activeChatID !== myID ? db.ref(`chats/${activeChatID}/${myID}`).push(payload) : null;
-
-                // Proses upload di background
                 let storageRef = storage.ref(`uploads/${Date.now()}_${fileName}`);
                 storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(realUrl => {
-                    // Update URL Base64 menjadi URL Firebase permanen agar penerima bisa download dengan stabil
                     myMsgRef.update({ url: realUrl });
                     if(targetMsgRef) targetMsgRef.update({ url: realUrl });
                 });
             };
-            
             reader.readAsDataURL(file);
             fileInput.value = "";
         }
 
+        // FUNGSI KUNCI: Menunggu pesan masuk dari ID lain secara Real-Time
         function listenGlobal() {
             db.ref(`chats/${myID}`).on('child_added', snap => {
                 let foreignID = snap.key;
+                // Jika ada ID baru mengirim pesan dan belum ada di daftar kontak kita
                 if(!contacts[foreignID] && foreignID !== myID) {
-                    contacts[foreignID] = foreignID;
-                    renderContacts();
+                    contacts[foreignID] = foreignID; // Simpan ID sebagai nama default
+                    localStorage.setItem('my_contacts', JSON.stringify(contacts));
+                    renderContacts(); // Gambar ulang daftar kontak agar muncul
                 }
             });
         }
