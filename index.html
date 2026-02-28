@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MyWA Buatan</title>
+    <title>WA GALAU</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
@@ -13,15 +13,14 @@
         body { background-color: #0b141a; color: #e9edef; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* Fix Border Chrome vs Browser Lain */
         #contact-outer { 
             flex: 1; 
             margin: 10px; 
             border-radius: 15px; 
             position: relative; 
-            padding: 2px; /* Perkecil padding agar border tidak offset */
+            padding: 2px; 
             overflow: hidden; 
-            background: #202c33; /* Warna dasar solid */
+            background: #202c33; 
         }
         
         #contact-outer::before { 
@@ -36,24 +35,20 @@
             z-index: 0;
         }
 
-        /* Animasi Mata */
         .eye-container { position: fixed; top: 15px; left: 15px; width: 60px; height: 35px; display: flex; gap: 12px; z-index: 2000; pointer-events: none; }
         .eye { width: 22px; height: 18px; background: #fff; border-radius: 50% 50% 40% 40%; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1.5px solid #ff0000; box-shadow: 0 0 10px rgba(255, 0, 0, 0.3); animation: blinkEye 4s infinite; }
         .pupil { width: 9px; height: 9px; background: #000; border-radius: 50%; border: 2px solid #ff0000; animation: creepyLook 3s infinite; }
         @keyframes blinkEye { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
         @keyframes creepyLook { 0% { transform: translate(0, 0); } 20% { transform: translate(5px, -3px); } 40% { transform: translate(-5px, 3px) scale(1.2); } 60% { transform: translate(0, 5px); } 100% { transform: translate(0, 0); } }
 
-        /* Welcome Screen */
         #welcome-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b141a; display: flex; justify-content: center; align-items: center; z-index: 1000; transition: opacity 1s; }
         .welcome-text { font-size: 24px; font-weight: bold; color: #00a884; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
-        /* Auth Screen */
         #auth-screen { padding: 50px 20px; text-align: center; }
         input[type="text"] { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #2a3942; background: #2a3942; color: white; }
         button { background: #00a884; border: none; padding: 10px 20px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
 
-        /* Main App */
         #app { display: flex; flex-direction: column; height: 100vh; }
         header { background: #202c33; padding: 15px; text-align: center; position: relative; }
         #cool-anim { font-size: 14px; color: #00a884; position: absolute; width: 100%; top: 5px; left: 0; animation: slideToggle 2s infinite; }
@@ -73,7 +68,6 @@
         .last-msg { font-size: 13px; color: #00a884; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
         .btn-del { background: none; border: none; color: #ef5350; font-size: 18px; padding: 10px; cursor: pointer; opacity: 0.6; }
 
-        /* Chat Window */
         #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b141a; z-index: 100; display: flex; flex-direction: column; }
         #msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
         .msg-bubble { max-width: 80%; padding: 10px; border-radius: 10px; margin-bottom: 8px; position: relative; word-wrap: break-word; }
@@ -148,6 +142,7 @@
         let myID = localStorage.getItem('my_wa_id');
         let activeChatID = null;
         let contacts = JSON.parse(localStorage.getItem('my_contacts') || '{}');
+        let sessionStartTime = Date.now(); // Catat waktu aplikasi dijalankan
 
         function encryptText(text) { try { return btoa(unescape(encodeURIComponent(text))); } catch(e) { return text; } }
         function decryptText(encoded) { try { return decodeURIComponent(escape(atob(encoded))); } catch(e) { return encoded; } }
@@ -179,7 +174,7 @@
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
             renderContacts();
-            listenGlobal(); // Inilah fungsi yang menangkap chat dari ID lain
+            listenGlobal(); 
             db.ref('users/' + myID).update({ status: 'online' });
         }
 
@@ -194,6 +189,8 @@
 
         function deleteContact(id) {
             if (confirm(`Hapus ${contacts[id] || id} dari daftar?`)) {
+                // Berhenti mendengarkan chat dari ID ini
+                db.ref(`chats/${myID}/${id}`).off();
                 delete contacts[id];
                 localStorage.setItem('my_contacts', JSON.stringify(contacts));
                 renderContacts();
@@ -267,11 +264,7 @@
             let fullDate = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             if(data.type === 'text') data.text = encryptText(data.text);
             let payload = { ...data, sender: myID, time: dateStr, fullDate: fullDate, ts: Date.now(), status: 1 };
-            
-            // Simpan di sisi pengirim
             db.ref(`chats/${myID}/${activeChatID}`).push(payload);
-            
-            // Simpan di sisi penerima
             if(activeChatID !== myID) {
                 db.ref(`chats/${activeChatID}/${myID}`).push(payload);
             }
@@ -279,7 +272,6 @@
 
         function loadMessages(target) {
             const area = document.getElementById('msg-area');
-            // Matikan listener lama sebelum buka chat baru agar tidak tumpang tindih
             db.ref(`chats/${myID}/${target}`).off();
             db.ref(`chats/${myID}/${target}`).on('value', snap => {
                 area.innerHTML = '';
@@ -287,14 +279,9 @@
                     let m = child.val();
                     let isMe = m.sender === myID;
                     let content = "";
-
-                    if(m.type === 'text') {
-                        content = `<div>${decryptText(m.text)}</div>`;
-                    } else if(m.type === 'image') {
-                        content = `<img src="${m.url}" class="chat-img" onclick="window.open('${m.url}')"><br><a href="${m.url}" download="${m.fileName}" target="_blank" class="download-link">📥 Download Gambar</a>`;
-                    } else if(m.type === 'file') {
-                        content = `<div style="background:rgba(0,0,0,0.1);padding:8px;border-radius:5px;border:1px solid #444">📄 ${m.fileName}</div><a href="${m.url}" download="${m.fileName}" target="_blank" class="download-link">📥 Download File</a>`;
-                    }
+                    if(m.type === 'text') content = `<div>${decryptText(m.text)}</div>`;
+                    else if(m.type === 'image') content = `<img src="${m.url}" class="chat-img" onclick="window.open('${m.url}')"><br><a href="${m.url}" download="${m.fileName}" target="_blank" class="download-link">📥 Download Gambar</a>`;
+                    else if(m.type === 'file') content = `<div style="background:rgba(0,0,0,0.1);padding:8px;border-radius:5px;border:1px solid #444">📄 ${m.fileName}</div><a href="${m.url}" download="${m.fileName}" target="_blank" class="download-link">📥 Download File</a>`;
                     
                     let statusClass = m.status === 3 ? "c3" : (m.status === 2 ? "c2" : "c1");
                     area.innerHTML += `
@@ -335,20 +322,24 @@
             fileInput.value = "";
         }
 
-        // FUNGSI DIPERBARUI: Menunggu pesan masuk dan memberi kesempatan penerima memberi nama
+        // PERBAIKAN UTAMA: Hanya tambahkan kontak jika ada PESAN BARU setelah aplikasi dibuka
         function listenGlobal() {
             db.ref(`chats/${myID}`).on('child_added', snap => {
                 let foreignID = snap.key;
-                // Jika ada ID baru mengirim pesan dan belum ada di daftar kontak kita
-                if(!contacts[foreignID] && foreignID !== myID) {
-                    // Beri notifikasi/prompt ke penerima untuk simpan nama khusus
-                    let askAlias = prompt(`Ada pesan masuk dari ID: ${foreignID}\nBeri nama untuk kontak ini agar mudah dikenali:`);
+                if(foreignID === myID) return;
+
+                // Pantau pesan di dalam ID tersebut
+                db.ref(`chats/${myID}/${foreignID}`).limitToLast(1).on('child_added', msgSnap => {
+                    let msgData = msgSnap.val();
                     
-                    // Simpan alias sesuai input, jika kosong gunakan ID saja
-                    contacts[foreignID] = askAlias || foreignID;
-                    localStorage.setItem('my_contacts', JSON.stringify(contacts));
-                    renderContacts(); // Gambar ulang daftar kontak agar muncul
-                }
+                    // CEK: Jika ID belum ada di kontak DAN waktu pesan lebih baru dari waktu buka aplikasi
+                    if(!contacts[foreignID] && msgData.ts > sessionStartTime) {
+                        let askAlias = prompt(`Ada pesan masuk baru dari ID: ${foreignID}\nBeri nama kontak:`);
+                        contacts[foreignID] = askAlias || foreignID;
+                        localStorage.setItem('my_contacts', JSON.stringify(contacts));
+                        renderContacts();
+                    }
+                });
             });
         }
     </script>
