@@ -14,119 +14,61 @@
         .hidden { display: none !important; }
 
         /* Animasi Mata */
-        .eye-container {
-            position: fixed; top: 15px; left: 15px; width: 60px; height: 35px;
-            display: flex; gap: 12px; z-index: 2000; pointer-events: none;
-        }
-        .eye {
-            width: 22px; height: 18px; background: #fff; border-radius: 50% 50% 40% 40%;
-            position: relative; display: flex; align-items: center; justify-content: center;
-            overflow: hidden; border: 1.5px solid #ff0000;
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
-            animation: blinkEye 4s infinite;
-        }
-        .pupil {
-            width: 9px; height: 9px; background: #000; border-radius: 50%;
-            border: 2px solid #ff0000;
-            animation: creepyLook 3s infinite;
-        }
+        .eye-container { position: fixed; top: 15px; left: 15px; width: 60px; height: 35px; display: flex; gap: 12px; z-index: 2000; pointer-events: none; }
+        .eye { width: 22px; height: 18px; background: #fff; border-radius: 50% 50% 40% 40%; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1.5px solid #ff0000; box-shadow: 0 0 10px rgba(255, 0, 0, 0.3); animation: blinkEye 4s infinite; }
+        .pupil { width: 9px; height: 9px; background: #000; border-radius: 50%; border: 2px solid #ff0000; animation: creepyLook 3s infinite; }
         @keyframes blinkEye { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
-        @keyframes creepyLook {
-            0% { transform: translate(0, 0); }
-            20% { transform: translate(5px, -3px); }
-            40% { transform: translate(-5px, 3px) scale(1.2); }
-            60% { transform: translate(0, 5px); }
-            100% { transform: translate(0, 0); }
-        }
+        @keyframes creepyLook { 0% { transform: translate(0, 0); } 20% { transform: translate(5px, -3px); } 40% { transform: translate(-5px, 3px) scale(1.2); } 60% { transform: translate(0, 5px); } 100% { transform: translate(0, 0); } }
 
         /* Welcome Screen */
-        #welcome-layer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #0b141a; display: flex; justify-content: center; align-items: center;
-            z-index: 1000; transition: opacity 1s;
-        }
+        #welcome-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b141a; display: flex; justify-content: center; align-items: center; z-index: 1000; transition: opacity 1s; }
         .welcome-text { font-size: 24px; font-weight: bold; color: #00a884; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
         /* Auth Screen */
         #auth-screen { padding: 50px 20px; text-align: center; }
-        input[type="text"] { 
-            width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px;
-            border: 1px solid #2a3942; background: #2a3942; color: white;
-        }
+        input[type="text"] { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #2a3942; background: #2a3942; color: white; }
         button { background: #00a884; border: none; padding: 10px 20px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
 
         /* Main App */
         #app { display: flex; flex-direction: column; height: 100vh; }
         header { background: #202c33; padding: 15px; text-align: center; position: relative; }
-        
-        #cool-anim { 
-            font-size: 14px; color: #00a884; position: absolute; width: 100%; top: 5px; left: 0;
-            animation: slideToggle 2s infinite; 
-        }
-        @keyframes slideToggle {
-            0%, 100% { transform: translateY(-20px); opacity: 0; }
-            50% { transform: translateY(0); opacity: 1; }
-        }
+        #cool-anim { font-size: 14px; color: #00a884; position: absolute; width: 100%; top: 5px; left: 0; animation: slideToggle 2s infinite; }
+        @keyframes slideToggle { 0%, 100% { transform: translateY(-20px); opacity: 0; } 50% { transform: translateY(0); opacity: 1; } }
 
         /* Contact List */
-        #contact-outer {
-            flex: 1; margin: 10px; border-radius: 15px; position: relative; padding: 4px;
-            overflow: hidden; background: rgba(32, 44, 51, 0.5);
-        }
-        #contact-outer::before {
-            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: conic-gradient(transparent, transparent, transparent, #00ffcc);
-            animation: rotateBorder 3s linear infinite;
-        }
+        #contact-outer { flex: 1; margin: 10px; border-radius: 15px; position: relative; padding: 4px; overflow: hidden; background: rgba(32, 44, 51, 0.5); }
+        #contact-outer::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, transparent, #00ffcc); animation: rotateBorder 3s linear infinite; }
         @keyframes rotateBorder { 100% { transform: rotate(360deg); } }
-
-        #contact-container {
-            position: relative; height: 100%; width: 100%; background: #0b141a;
-            border-radius: 10px; overflow-y: auto; padding: 5px; z-index: 1;
-        }
+        #contact-container { position: relative; height: 100%; width: 100%; background: #0b141a; border-radius: 10px; overflow-y: auto; padding: 5px; z-index: 1; }
 
         .search-box { padding: 10px; background: #111b21; }
         .search-box input { width: 100%; padding: 8px; border-radius: 5px; border: none; background: #2a3942; color: white; }
 
-        .contact-card {
-            background: #111b21; padding: 12px; border-bottom: 1px solid #222d34;
-            display: flex; justify-content: space-between; align-items: center;
-            border-radius: 8px; margin-bottom: 5px; transition: 0.3s;
-        }
+        .contact-card { background: #111b21; padding: 12px; border-bottom: 1px solid #222d34; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 5px; transition: 0.3s; }
         .my-self-card { border-left: 4px solid #00a884; background: #1a2a24; }
         .contact-info { flex: 1; cursor: pointer; }
         .contact-info b { display: block; color: #e9edef; font-size: 16px; }
         .contact-info span { font-size: 12px; color: #8696a0; display: block; margin: 2px 0; }
         .last-msg { font-size: 13px; color: #00a884; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-        
-        .btn-del { 
-            background: none; border: none; color: #ef5350; font-size: 18px; 
-            padding: 10px; cursor: pointer; opacity: 0.6; 
-        }
-        .btn-del:hover { opacity: 1; }
+        .btn-del { background: none; border: none; color: #ef5350; font-size: 18px; padding: 10px; cursor: pointer; opacity: 0.6; }
 
         /* Chat Window */
         #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b141a; z-index: 100; display: flex; flex-direction: column; }
         #msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
-        
-        .msg-bubble { max-width: 85%; padding: 10px; border-radius: 10px; margin-bottom: 8px; position: relative; word-wrap: break-word; }
+        .msg-bubble { max-width: 80%; padding: 10px; border-radius: 10px; margin-bottom: 8px; position: relative; word-wrap: break-word; }
         .msg-me { align-self: flex-end; background: #005c4b; }
         .msg-them { align-self: flex-start; background: #202c33; }
-        
-        /* Waktu & Tanggal */
-        .msg-time { font-size: 10px; color: #8696a0; text-align: right; margin-top: 5px; line-height: 1.2; }
-        .msg-full-date { display: block; font-size: 9px; opacity: 0.8; margin-bottom: 2px; }
-
+        .msg-time { font-size: 10px; color: #8696a0; text-align: right; margin-top: 5px; }
         .status-icon { font-size: 12px; margin-left: 5px; }
-        .c1 { color: #8696a0; } .c2 { color: #8696a0; } .c3 { color: #53bdeb; }
+        .c1, .c2 { color: #8696a0; } .c3 { color: #53bdeb; }
 
         .input-bar { background: #202c33; padding: 10px; display: flex; align-items: center; }
         .input-bar input { flex: 1; background: #2a3942; border: none; padding: 10px; border-radius: 8px; color: white; }
         .file-btn { margin-right: 10px; font-size: 22px; cursor: pointer; }
 
-        .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; border: 1px solid #333; display: block; }
-        .download-link { color: #53bdeb; font-size: 12px; text-decoration: none; margin-top: 5px; display: inline-block; font-weight: bold; border: 1px solid #53bdeb; padding: 2px 6px; border-radius: 4px; }
+        .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; border: 1px solid #333; cursor: pointer; }
+        .download-link { color: #53bdeb; font-size: 12px; text-decoration: none; margin-top: 5px; display: inline-block; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -151,16 +93,8 @@
             <h3>Daftar Kontak</h3>
             <button onclick="openAddContact()" style="position:absolute; right:10px; top:12px; padding:5px 10px;">+ ID</button>
         </header>
-
-        <div class="search-box">
-            <input type="text" id="search-input" placeholder="Cari Nama atau ID..." oninput="renderContacts()">
-        </div>
-
-        <div id="contact-outer">
-            <div id="contact-container">
-                <div id="list-kontak"></div>
-            </div>
-        </div>
+        <div class="search-box"><input type="text" id="search-input" placeholder="Cari Nama atau ID..." oninput="renderContacts()"></div>
+        <div id="contact-outer"><div id="contact-container"><div id="list-kontak"></div></div></div>
     </div>
 
     <div id="chat-window" class="hidden">
@@ -267,7 +201,6 @@
                 if (id.toLowerCase().includes(search) || alias.toLowerCase().includes(search)) {
                     let cardID = 'card-' + id.replace(/\s+/g, '-');
                     list.innerHTML += `<div id="${cardID}"></div>`;
-                    
                     db.ref(`chats/${myID}/${id}`).limitToLast(1).on('value', snap => {
                         let lastMsg = "Belum ada pesan";
                         snap.forEach(c => {
@@ -310,23 +243,19 @@
 
         function pushMsg(data) {
             let now = new Date();
-            let jam = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-            // Format: Hari, Tanggal Bulan Tahun
-            let opsi = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            let tglLengkap = now.toLocaleDateString('id-ID', opsi);
-
+            let dateStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+            let fullDate = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
             if(data.type === 'text') data.text = encryptText(data.text);
             
-            let payload = { 
-                ...data, 
-                sender: myID, 
-                time: jam, 
-                fullDate: tglLengkap, 
-                ts: Date.now(), 
-                status: 1 
-            };
+            let payload = { ...data, sender: myID, time: dateStr, fullDate: fullDate, ts: Date.now(), status: 1 };
+            
+            // Simpan ke pengirim
             db.ref(`chats/${myID}/${activeChatID}`).push(payload);
-            if(activeChatID !== myID) db.ref(`chats/${activeChatID}/${myID}`).push(payload);
+            // Simpan ke penerima jika bukan chat sendiri
+            if(activeChatID !== myID) {
+                db.ref(`chats/${activeChatID}/${myID}`).push(payload);
+            }
         }
 
         function loadMessages(target) {
@@ -337,25 +266,21 @@
                     let m = child.val();
                     let isMe = m.sender === myID;
                     let content = "";
-                    
+
                     if(m.type === 'text') {
                         content = `<div>${decryptText(m.text)}</div>`;
                     } else if(m.type === 'image') {
-                        content = `
-                            <img src="${m.url}" class="chat-img" onclick="window.open('${m.url}')">
-                            <a href="${m.url}" target="_blank" download class="download-link">Unduh Gambar</a>`;
-                    } else {
-                        content = `
-                            <div style="background:rgba(0,0,0,0.2);padding:8px;border-radius:5px;border:1px solid #444">📄 ${m.fileName}</div>
-                            <a href="${m.url}" target="_blank" class="download-link">Unduh File</a>`;
+                        content = `<img src="${m.url}" class="chat-img" onclick="window.open('${m.url}')"><br><a href="${m.url}" target="_blank" download="${m.fileName || 'image.jpg'}" class="download-link">Unduh Gambar</a>`;
+                    } else if(m.type === 'file') {
+                        content = `<div style="background:rgba(0,0,0,0.1);padding:8px;border-radius:5px;border:1px solid #444">📄 ${m.fileName}</div><a href="${m.url}" target="_blank" download="${m.fileName}" class="download-link">Buka/Unduh File</a>`;
                     }
                     
                     let statusClass = m.status === 3 ? "c3" : (m.status === 2 ? "c2" : "c1");
                     area.innerHTML += `
                         <div class="msg-bubble ${isMe ? 'msg-me' : 'msg-them'}">
+                            <div style="font-size:9px; opacity:0.7; margin-bottom:3px;">${m.fullDate || ''}</div>
                             ${content}
                             <div class="msg-time">
-                                <span class="msg-full-date">${m.fullDate || ''}</span>
                                 ${m.time} ${isMe ? `<span class="status-icon ${statusClass}">✓✓</span>` : ''}
                             </div>
                         </div>`;
@@ -368,12 +293,28 @@
             let fileInput = document.getElementById('file-input');
             let file = fileInput.files[0];
             if(!file) return;
-            let ref = storage.ref(`uploads/${Date.now()}_${file.name}`);
-            ref.put(file).then(snap => {
-                snap.ref.getDownloadURL().then(url => {
-                    pushMsg({ url: url, type: file.type.includes('image') ? 'image' : 'file', fileName: file.name });
-                    fileInput.value = "";
+
+            // Beri tanda loading sementara di input
+            let btn = document.querySelector('.file-btn');
+            btn.innerHTML = "⏳";
+
+            let fileName = file.name;
+            let storageRef = storage.ref(`uploads/${Date.now()}_${fileName}`);
+            
+            storageRef.put(file).then(snapshot => {
+                return snapshot.ref.getDownloadURL();
+            }).then(url => {
+                pushMsg({ 
+                    url: url, 
+                    type: file.type.includes('image') ? 'image' : 'file', 
+                    fileName: fileName 
                 });
+                fileInput.value = "";
+                btn.innerHTML = "📎";
+            }).catch(error => {
+                console.error("Upload gagal:", error);
+                alert("Gagal mengirim file!");
+                btn.innerHTML = "📎";
             });
         }
 
