@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyWA - IrfanK</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0b141a; color: #e9edef; overflow: hidden; }
+        .hidden { display: none !important; }
+
+        /* Animasi Selamat Datang */
+        #welcome-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0b141a; display: flex; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 1s;
+        }
+        .welcome-text {
+            font-size: 24px; font-weight: bold; color: #00a884;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        /* Auth Screen */
+        #auth-screen { padding: 50px 20px; text-align: center; }
+        input[type="text"] { 
+            width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px;
+            border: 1px solid #2a3942; background: #2a3942; color: white;
+        }
+        button { background: #00a884; border: none; padding: 10px 20px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
+
+        /* Beranda */
+        #app { display: flex; flex-direction: column; height: 100vh; }
+        header { background: #202c33; padding: 15px; text-align: center; position: relative; }
+        
+        #cool-anim { 
+            font-size: 14px; color: #00a884; position: absolute; width: 100%; top: 5px; left: 0;
+            animation: slideToggle 2s infinite; 
+        }
+        @keyframes slideToggle {
+            0%, 100% { transform: translateY(-20px); opacity: 0; }
+            50% { transform: translateY(0); opacity: 1; }
+        }
+
+        #contact-container {
+            flex: 1; overflow-y: auto; padding: 10px;
+            border: 2px solid rgba(0, 168, 132, 0.2); margin: 10px; border-radius: 15px;
+        }
+
+        .contact-card {
+            background: #111b21; padding: 15px; border-bottom: 1px solid #222d34;
+            display: flex; justify-content: space-between; align-items: center;
+            border-radius: 10px; margin-bottom: 5px;
+        }
+        .contact-info b { display: block; color: #e9edef; }
+        .contact-info span { font-size: 12px; color: #8696a0; }
+        .last-msg { font-size: 13px; color: #00a884; margin-top: 4px; }
+
+        /* Chat Window */
+        #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b141a; z-index: 100; display: flex; flex-direction: column; }
+        #msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
+        
+        .msg-bubble { 
+            max-width: 70%; padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; position: relative;
+            word-wrap: break-word;
+        }
+        .msg-me { align-self: flex-end; background: #005c4b; }
+        .msg-them { align-self: flex-start; background: #202c33; }
+        .msg-time { font-size: 10px; color: #8696a0; text-align: right; margin-top: 4px; }
+        
+        .status-icon { font-size: 12px; margin-left: 5px; }
+        .c1 { color: #8696a0; } /* Centang 1 */
+        .c2 { color: #8696a0; } /* Centang 2 Abu */
+        .c3 { color: #53bdeb; } /* Centang 2 Biru */
+
+        .input-bar { background: #202c33; padding: 10px; display: flex; align-items: center; }
+        .input-bar input { flex: 1; background: #2a3942; border: none; padding: 10px; border-radius: 8px; color: white; }
+        .file-btn { margin-right: 10px; font-size: 20px; cursor: pointer; }
+
+        img.chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; }
+        .download-btn { font-size: 11px; color: #53bdeb; text-decoration: none; display: block; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-layer"><div class="welcome-text">SELAMAT DATANG</div></div>
+
+    <div id="auth-screen" class="hidden">
+        <h2>Bikin ID Permanen</h2>
+        <input type="text" id="my-id-input" placeholder="Huruf atau Angka...">
+        <br>
+        <button onclick="saveID()">BUAT ID</button>
+    </div>
+
+    <div id="app" class="hidden">
+        <header>
+            <div id="cool-anim">SISTEM AKTIF • TERENKRIPSI</div>
+            <h3>MyWA</h3>
+            <button onclick="openAddContact()" style="position:absolute; right:10px; top:12px; padding:5px 10px;">+ ID</button>
+        </header>
+        <div id="contact-container">
+            <div id="list-kontak"></div>
+        </div>
+    </div>
+
+    <div id="chat-window" class="hidden">
+        <header style="display:flex; align-items:center;">
+            <button onclick="closeChat()" style="background:none; font-size:20px; margin-right:10px;">←</button>
+            <div id="chat-target-info"></div>
+        </header>
+        <div id="msg-area"></div>
+        <div class="input-bar">
+            <label class="file-btn">📎<input type="file" id="file-input" class="hidden" onchange="uploadFile()"></label>
+            <input type="text" id="text-input" placeholder="Ketik pesan...">
+            <button onclick="sendText()" style="margin-left:10px;">➤</button>
+        </div>
+    </div>
+
+    <script>
+        // CONFIG FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyBndqyGrpv7D-gelmif8YELzs-EJj237MA",
+            authDomain: "mywa-irfank.firebaseapp.com",
+            databaseURL: "https://mywa-irfank-default-rtdb.firebaseio.com",
+            projectId: "mywa-irfank",
+            storageBucket: "mywa-irfank.firebasestorage.app",
+            messagingSenderId: "567484997979",
+            appId: "1:567484997979:web:743ea53391552dfde07a7e"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const storage = firebase.storage();
+
+        let myID = localStorage.getItem('my_wa_id');
+        let activeChatID = null;
+        let contacts = JSON.parse(localStorage.getItem('my_contacts') || '{}');
+
+        // --- FITUR KEAMANAN: ENKRIPSI ---
+        function encryptText(text) {
+            try { return btoa(unescape(encodeURIComponent(text))); } catch(e) { return text; }
+        }
+        function decryptText(encoded) {
+            try { return decodeURIComponent(escape(atob(encoded))); } catch(e) { return encoded; }
+        }
+
+        // 1. ANIMASI & AUTH
+        setTimeout(() => {
+            document.getElementById('welcome-layer').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('welcome-layer').classList.add('hidden');
+                if (!myID) {
+                    document.getElementById('auth-screen').classList.remove('hidden');
+                } else {
+                    startApp();
+                }
+            }, 1000);
+        }, 2000);
+
+        function saveID() {
+            let id = document.getElementById('my-id-input').value.trim();
+            if (!id) return;
+            db.ref('users/' + id).get().then(snap => {
+                if (snap.exists()) {
+                    alert("ID sudah ada pemiliknya!");
+                } else {
+                    db.ref('users/' + id).set({ status: 'online' });
+                    localStorage.setItem('my_wa_id', id);
+                    myID = id;
+                    startApp();
+                }
+            });
+        }
+
+        function startApp() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            renderContacts();
+            listenGlobal();
+            db.ref('users/' + myID).update({ status: 'online' });
+            window.onbeforeunload = () => db.ref('users/' + myID).update({ status: 'offline' });
+        }
+
+        // 2. KONTAK & NAMA KHUSUS
+        function openAddContact() {
+            let target = prompt("Masukkan ID tujuan:");
+            if (!target || target == myID) return;
+            let alias = prompt("Beri nama khusus:");
+            contacts[target] = alias || target;
+            localStorage.setItem('my_contacts', JSON.stringify(contacts));
+            renderContacts();
+        }
+
+        function deleteContact(id) {
+            if(confirm("Hapus kontak ini?")) {
+                delete contacts[id];
+                localStorage.setItem('my_contacts', JSON.stringify(contacts));
+                renderContacts();
+            }
+        }
+
+        function renderContacts() {
+            const list = document.getElementById('list-kontak');
+            list.innerHTML = '';
+            for (let id in contacts) {
+                db.ref(`chats/${myID}/${id}`).limitToLast(1).on('value', snap => {
+                    let lastMsg = "Belum ada chat";
+                    snap.forEach(c => {
+                        let val = c.val();
+                        lastMsg = val.type === 'text' ? decryptText(val.text) : "📎 File/Gambar";
+                    });
+                    
+                    let html = `
+                        <div class="contact-card" onclick="openChat('${id}')">
+                            <div class="contact-info">
+                                <b>${contacts[id]}</b>
+                                <span>ID: ${id}</span>
+                                <div class="last-msg">${lastMsg}</div>
+                            </div>
+                            <button onclick="event.stopPropagation(); deleteContact('${id}')" style="background:red; padding:3px 7px; font-size:10px;">X</button>
+                        </div>
+                    `;
+                    let old = document.getElementById('card-' + id);
+                    if(old) old.outerHTML = html; else list.innerHTML += `<div id="card-${id}">${html}</div>`;
+                });
+            }
+        }
+
+        // 3. CHAT LOGIC
+        function openChat(id) {
+            activeChatID = id;
+            document.getElementById('chat-window').classList.remove('hidden');
+            document.getElementById('chat-target-info').innerHTML = `<b>${contacts[id]}</b><br><small>${id}</small>`;
+            loadMessages(id);
+        }
+
+        function closeChat() {
+            activeChatID = null;
+            document.getElementById('chat-window').classList.add('hidden');
+        }
+
+        function sendText() {
+            let txt = document.getElementById('text-input').value;
+            if(!txt) return;
+            pushMsg({ text: txt, type: 'text' });
+            document.getElementById('text-input').value = '';
+        }
+
+        function pushMsg(data) {
+            let now = new Date();
+            let timestamp = now.getTime();
+            let dateStr = now.getDate() + "/" + (now.getMonth()+1) + "/" + now.getFullYear() + " " + now.getHours() + ":" + now.getMinutes();
+            
+            // Enkripsi jika tipe pesan adalah text
+            if(data.type === 'text') {
+                data.text = encryptText(data.text);
+            }
+
+            let payload = {
+                ...data,
+                sender: myID,
+                time: dateStr,
+                ts: timestamp,
+                status: 1 
+            };
+
+            db.ref(`chats/${myID}/${activeChatID}`).push(payload);
+            db.ref(`chats/${activeChatID}/${myID}`).push(payload);
+        }
+
+        function loadMessages(target) {
+            const area = document.getElementById('msg-area');
+            db.ref(`chats/${myID}/${target}`).on('value', snap => {
+                area.innerHTML = '';
+                snap.forEach(child => {
+                    let m = child.val();
+                    let isMe = m.sender === myID;
+                    
+                    let statusClass = "c1";
+                    if(m.status === 2) statusClass = "c2";
+                    if(m.status === 3) statusClass = "c3";
+
+                    let content = "";
+                    if(m.type === 'text') {
+                        content = decryptText(m.text);
+                    } else if(m.type === 'image') {
+                        content = `<img src="${m.url}" class="chat-img"><a href="${m.url}" download class="download-btn">Download Gambar</a>`;
+                    } else if(m.type === 'file') {
+                        content = `📄 File: <a href="${m.url}" target="_blank" class="download-btn">Download File</a>`;
+                    }
+
+                    area.innerHTML += `
+                        <div class="msg-bubble ${isMe ? 'msg-me' : 'msg-them'}">
+                            ${content}
+                            <div class="msg-time">
+                                ${m.time} 
+                                ${isMe ? `<span class="status-icon ${statusClass}">✓✓</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    if(!isMe && m.status < 3) {
+                        db.ref(`chats/${myID}/${target}/${child.key}`).update({ status: 3 });
+                        db.ref(`chats/${target}/${myID}/${child.key}`).update({ status: 3 });
+                    }
+                });
+                area.scrollTop = area.scrollHeight;
+            });
+        }
+
+        function uploadFile() {
+            let file = document.getElementById('file-input').files[0];
+            if(!file) return;
+            let ref = storage.ref(`files/${Date.now()}_${file.name}`);
+            ref.put(file).then(snap => {
+                snap.ref.getDownloadURL().then(url => {
+                    let type = file.type.includes('image') ? 'image' : 'file';
+                    pushMsg({ url: url, type: type, text: file.name });
+                });
+            });
+        }
+
+        function listenGlobal() {
+            db.ref(`chats/${myID}`).on('child_added', snap => {
+                let foreignID = snap.key;
+                if(!contacts[foreignID]) {
+                    contacts[foreignID] = "ID Asing";
+                    localStorage.setItem('my_contacts', JSON.stringify(contacts));
+                    renderContacts();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
