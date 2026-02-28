@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MyWA - IrfanK Fast</title>
+    <title>MyWA</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
@@ -68,12 +68,7 @@
         .file-btn { margin-right: 10px; font-size: 22px; cursor: pointer; }
 
         .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; border: 1px solid #333; cursor: pointer; }
-        .download-link { color: #53bdeb; font-size: 12px; text-decoration: none; margin-top: 5px; display: inline-block; font-weight: bold; }
-        
-        /* Loading Overlay for Image */
-        .img-loading { opacity: 0.5; filter: grayscale(1); }
-        .loader-ring { width: 20px; height: 20px; border: 2px solid #fff; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; vertical-align: middle; }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .download-link { background: #343f46; color: #e9edef; padding: 8px 12px; border-radius: 5px; text-decoration: none; margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: bold; border: 1px solid #444; }
     </style>
 </head>
 <body>
@@ -250,11 +245,8 @@
             let now = new Date();
             let dateStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
             let fullDate = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            
             if(data.type === 'text') data.text = encryptText(data.text);
-            
             let payload = { ...data, sender: myID, time: dateStr, fullDate: fullDate, ts: Date.now(), status: 1 };
-            
             db.ref(`chats/${myID}/${activeChatID}`).push(payload);
             if(activeChatID !== myID) {
                 db.ref(`chats/${activeChatID}/${myID}`).push(payload);
@@ -273,11 +265,9 @@
                     if(m.type === 'text') {
                         content = `<div>${decryptText(m.text)}</div>`;
                     } else if(m.type === 'image') {
-                        let loadingClass = m.url.startsWith('data:') ? 'img-loading' : '';
-                        let loader = m.url.startsWith('data:') ? '<span class="loader-ring"></span>' : '';
-                        content = `${loader}<img src="${m.url}" class="chat-img ${loadingClass}" onclick="window.open('${m.url}')"><br><a href="${m.url}" target="_blank" class="download-link">Buka Gambar</a>`;
+                        content = `<img src="${m.url}" class="chat-img" onclick="window.open('${m.url}')"><br><a href="${m.url}" download="${m.fileName}" target="_blank" class="download-link">📥 Download Gambar</a>`;
                     } else if(m.type === 'file') {
-                        content = `<div style="background:rgba(0,0,0,0.1);padding:8px;border-radius:5px;border:1px solid #444">📄 ${m.fileName}</div><a href="${m.url}" target="_blank" class="download-link">Buka/Unduh File</a>`;
+                        content = `<div style="background:rgba(0,0,0,0.1);padding:8px;border-radius:5px;border:1px solid #444">📄 ${m.fileName}</div><a href="${m.url}" download="${m.fileName}" target="_blank" class="download-link">📥 Download File</a>`;
                     }
                     
                     let statusClass = m.status === 3 ? "c3" : (m.status === 2 ? "c2" : "c1");
@@ -294,7 +284,6 @@
             });
         }
 
-        // FUNGSI BARU: Langsung kirim preview, upload di background
         function uploadFile() {
             let fileInput = document.getElementById('file-input');
             let file = fileInput.files[0];
@@ -303,18 +292,16 @@
             let fileName = file.name;
             let isImg = file.type.includes('image');
 
-            // Gunakan FileReader untuk mendapatkan preview instan (Base64)
+            // Gunakan FileReader untuk preview instan tanpa menunggu upload
             let reader = new FileReader();
             reader.onload = function(e) {
-                let previewUrl = e.target.result;
-
-                // 1. Langsung Push ke database dengan URL preview (BIAR CEPAT MUNCUL)
+                let instantUrl = e.target.result;
                 let now = new Date();
                 let dateStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
                 let fullDate = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
                 
                 let payload = { 
-                    url: previewUrl, 
+                    url: instantUrl, 
                     type: isImg ? 'image' : 'file', 
                     fileName: fileName,
                     sender: myID, 
@@ -324,28 +311,20 @@
                     status: 1 
                 };
 
+                // Push data awal agar langsung muncul
                 let myMsgRef = db.ref(`chats/${myID}/${activeChatID}`).push(payload);
                 let targetMsgRef = activeChatID !== myID ? db.ref(`chats/${activeChatID}/${myID}`).push(payload) : null;
 
-                // 2. Jalankan upload Firebase di background
+                // Proses upload di background
                 let storageRef = storage.ref(`uploads/${Date.now()}_${fileName}`);
                 storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(realUrl => {
-                    // 3. Update data di database setelah upload selesai dengan URL asli
+                    // Update URL Base64 menjadi URL Firebase permanen agar penerima bisa download dengan stabil
                     myMsgRef.update({ url: realUrl });
                     if(targetMsgRef) targetMsgRef.update({ url: realUrl });
                 });
             };
             
-            if(isImg) {
-                reader.readAsDataURL(file); // Untuk gambar ambil datanya
-            } else {
-                // Untuk file biasa, langsung upload (karena tidak ada preview gambar)
-                let storageRef = storage.ref(`uploads/${Date.now()}_${fileName}`);
-                storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(realUrl => {
-                    pushMsg({ url: realUrl, type: 'file', fileName: fileName });
-                });
-            }
-            
+            reader.readAsDataURL(file);
             fileInput.value = "";
         }
 
