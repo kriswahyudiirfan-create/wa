@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MyWA - Galau</title>
+    <title>MyWA - IrfanK Fast</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
@@ -13,11 +13,10 @@
         body { background-color: #0b141a; color: #e9edef; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* Animasi Tebasan */
-        @keyframes slashIn {
-            0% { transform: translateX(-100%) skewX(-20deg); opacity: 0; }
-            70% { transform: translateX(5%) skewX(10deg); opacity: 1; }
-            100% { transform: translateX(0) skewX(0deg); opacity: 1; }
+        /* Animasi Baru: Smooth Fade & Slide */
+        @keyframes smoothEntry {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         #contact-outer { flex: 1; margin: 10px; border-radius: 15px; position: relative; padding: 2px; overflow: hidden; background: #202c33; }
@@ -30,7 +29,8 @@
 
         #auth-screen { padding: 50px 20px; text-align: center; }
         input[type="text"] { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #2a3942; background: #2a3942; color: white; }
-        button { background: #00a884; border: none; padding: 10px 20px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
+        button { background: #00a884; border: none; padding: 10px 20px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
+        button:active { transform: scale(0.95); }
 
         #app { display: flex; flex-direction: column; height: 100vh; }
         header { background: #202c33; padding: 15px; text-align: center; position: relative; }
@@ -41,7 +41,7 @@
         .search-box { padding: 10px; background: #111b21; }
         .search-box input { width: 100%; padding: 8px; border-radius: 5px; border: none; background: #2a3942; color: white; }
 
-        .contact-card { background: #111b21; padding: 12px; border-bottom: 1px solid #222d34; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 5px; opacity: 1; }
+        .contact-card { background: #111b21; padding: 12px; border-bottom: 1px solid #222d34; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 5px; animation: smoothEntry 0.4s ease-out forwards; }
         .my-self-card { border-left: 4px solid #00a884; background: #1a2a24; }
         .contact-info { flex: 1; cursor: pointer; }
         .contact-info b { display: block; color: #e9edef; font-size: 16px; }
@@ -51,7 +51,7 @@
 
         #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b141a; z-index: 100; display: flex; flex-direction: column; }
         #msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
-        .msg-bubble { max-width: 80%; padding: 10px; border-radius: 10px; margin-bottom: 8px; position: relative; word-wrap: break-word; }
+        .msg-bubble { max-width: 80%; padding: 10px; border-radius: 10px; margin-bottom: 8px; position: relative; word-wrap: break-word; animation: smoothEntry 0.3s ease-out; }
         .msg-me { align-self: flex-end; background: #005c4b; }
         .msg-them { align-self: flex-start; background: #202c33; }
         .msg-time { font-size: 10px; color: #8696a0; text-align: right; margin-top: 5px; }
@@ -64,12 +64,9 @@
 
         .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; border: 1px solid #333; cursor: pointer; }
         .download-link { background: #343f46; color: #e9edef; padding: 8px 12px; border-radius: 5px; text-decoration: none; margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: bold; border: 1px solid #444; }
-        
-        /* Class pembantu untuk animasi tebasan */
-        .slashed { animation: slashIn 0.5s ease forwards; }
     </style>
 </head>
-<body>
+<body onclick="playClickSound()">
 
     <div id="welcome-layer"><div class="welcome-text">SELAMAT DATANG</div></div>
 
@@ -99,11 +96,26 @@
         <div class="input-bar">
             <label class="file-btn">📎<input type="file" id="file-input" class="hidden" onchange="uploadFile()"></label>
             <input type="text" id="text-input" placeholder="Ketik pesan...">
-            <button onclick="sendText()" style="margin-left:10px;">➤</button>
+            <button onclick="sendText()">➤</button>
         </div>
     </div>
 
     <script>
+        // Efek Suara Klik (Synthesized)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playClickSound() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
         const firebaseConfig = {
             apiKey: "AIzaSyBndqyGrpv7D-gelmif8YELzs-EJj237MA",
             authDomain: "mywa-irfank.firebaseapp.com",
@@ -188,7 +200,7 @@
 
             if (!search || myID.toLowerCase().includes(search) || "saya".includes(search)) {
                 list.innerHTML += `
-                    <div class="contact-card my-self-card slashed">
+                    <div class="contact-card my-self-card">
                         <div class="contact-info" onclick="openChat('${myID}')">
                             <b>Saya (Simpan Pesan)</b>
                             <span>ID: ${myID}</span>
@@ -201,7 +213,7 @@
                 let alias = contacts[id];
                 if (id.toLowerCase().includes(search) || alias.toLowerCase().includes(search)) {
                     let cardID = 'card-' + id.replace(/\s+/g, '-');
-                    list.innerHTML += `<div id="${cardID}" class="slashed"></div>`;
+                    list.innerHTML += `<div id="${cardID}"></div>`;
                     
                     db.ref(`chats/${myID}/${id}`).limitToLast(1).on('value', snap => {
                         let lastMsg = "Belum ada pesan";
@@ -225,15 +237,6 @@
                 }
             }
         }
-
-        // Loop animasi tebasan setiap detik
-        setInterval(() => {
-            document.querySelectorAll('.contact-card').forEach(el => {
-                el.classList.remove('slashed');
-                void el.offsetWidth; // trigger reflow
-                el.classList.add('slashed');
-            });
-        }, 1000);
 
         function openChat(id) {
             activeChatID = id;
@@ -318,21 +321,16 @@
         }
 
         function listenGlobal() {
-            // Memantau root chats untuk mendeteksi folder chat (baik baru atau lama yang tersimpan di DB)
             db.ref(`chats/${myID}`).on('value', snap => {
                 snap.forEach(childSnap => {
                     let foreignID = childSnap.key;
                     if(foreignID === myID) return;
-
-                    // JIKA ID ini ada di database tapi tidak ada di list kontak lokal (terhapus/offline)
                     if(!contacts[foreignID]) {
                         if (aliasMemory[foreignID]) {
-                            // Pulihkan otomatis dari memori alias
                             contacts[foreignID] = aliasMemory[foreignID];
                             localStorage.setItem('my_contacts', JSON.stringify(contacts));
                             renderContacts();
                         } else {
-                            // Jika benar-benar asing, tanya nama
                             let askAlias = prompt(`Pesan masuk dari ID: ${foreignID}\nBeri nama kontak:`);
                             saveToContacts(foreignID, askAlias || foreignID);
                         }
