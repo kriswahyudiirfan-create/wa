@@ -13,7 +13,6 @@
         body { background-color: #0b141a; color: #e9edef; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* Animasi Baru: Smooth Fade & Slide */
         @keyframes smoothEntry {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -101,7 +100,6 @@
     </div>
 
     <script>
-        // Efek Suara Klik (Synthesized)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playClickSound() {
             const osc = audioCtx.createOscillator();
@@ -186,9 +184,11 @@
         }
 
         function deleteContact(id) {
-            if (confirm(`Hapus ${contacts[id] || id} dari daftar?`)) {
+            if (confirm(`Hapus ${contacts[id] || id} secara PERMANEN?`)) {
                 delete contacts[id];
+                delete aliasMemory[id]; // Hapus dari memori otak aplikasi agar tidak muncul lagi otomatis
                 localStorage.setItem('my_contacts', JSON.stringify(contacts));
+                localStorage.setItem('alias_memory', JSON.stringify(aliasMemory));
                 renderContacts();
             }
         }
@@ -198,44 +198,48 @@
             const search = document.getElementById('search-input').value.toLowerCase();
             list.innerHTML = '';
 
+            // Render Diri Sendiri
             if (!search || myID.toLowerCase().includes(search) || "saya".includes(search)) {
                 list.innerHTML += `
                     <div class="contact-card my-self-card">
                         <div class="contact-info" onclick="openChat('${myID}')">
                             <b>Saya (Simpan Pesan)</b>
                             <span>ID: ${myID}</span>
-                            <div class="last-msg">Catatan pribadi kamu</div>
+                            <div class="last-msg" id="last-${myID}">Memuat catatan...</div>
                         </div>
                     </div>`;
+                updateLastMsg(myID);
             }
 
+            // Render Daftar Kontak (Tanpa Delay)
             for (let id in contacts) {
                 let alias = contacts[id];
                 if (id.toLowerCase().includes(search) || alias.toLowerCase().includes(search)) {
-                    let cardID = 'card-' + id.replace(/\s+/g, '-');
-                    list.innerHTML += `<div id="${cardID}"></div>`;
-                    
-                    db.ref(`chats/${myID}/${id}`).limitToLast(1).on('value', snap => {
-                        let lastMsg = "Belum ada pesan";
-                        snap.forEach(c => {
-                            let val = c.val();
-                            lastMsg = val.type === 'text' ? decryptText(val.text) : "📎 Media/File";
-                        });
-                        const targetDiv = document.getElementById(cardID);
-                        if (targetDiv) {
-                            targetDiv.innerHTML = `
-                            <div class="contact-card">
-                                <div class="contact-info" onclick="openChat('${id}')">
-                                    <b>${alias}</b>
-                                    <span>ID: ${id}</span>
-                                    <div class="last-msg">${lastMsg}</div>
-                                </div>
-                                <button class="btn-del" onclick="deleteContact('${id}')">✕</button>
-                            </div>`;
-                        }
-                    });
+                    list.innerHTML += `
+                        <div class="contact-card">
+                            <div class="contact-info" onclick="openChat('${id}')">
+                                <b>${alias}</b>
+                                <span>ID: ${id}</span>
+                                <div class="last-msg" id="last-${id}">Menghubungkan...</div>
+                            </div>
+                            <button class="btn-del" onclick="deleteContact('${id}')">✕</button>
+                        </div>`;
+                    updateLastMsg(id);
                 }
             }
+        }
+
+        function updateLastMsg(id) {
+            // Menggunakan limitToLast(1) agar hanya mengambil 1 pesan terbaru
+            db.ref(`chats/${myID}/${id}`).limitToLast(1).on('value', snap => {
+                let lastTxt = "Belum ada pesan";
+                snap.forEach(c => {
+                    let val = c.val();
+                    lastTxt = val.type === 'text' ? decryptText(val.text) : "📎 Media/File";
+                });
+                let el = document.getElementById(`last-${id}`);
+                if (el) el.innerText = lastTxt;
+            });
         }
 
         function openChat(id) {
@@ -321,21 +325,24 @@
         }
 
         function listenGlobal() {
-            db.ref(`chats/${myID}`).on('value', snap => {
-                snap.forEach(childSnap => {
-                    let foreignID = childSnap.key;
-                    if(foreignID === myID) return;
-                    if(!contacts[foreignID]) {
-                        if (aliasMemory[foreignID]) {
-                            contacts[foreignID] = aliasMemory[foreignID];
-                            localStorage.setItem('my_contacts', JSON.stringify(contacts));
-                            renderContacts();
-                        } else {
-                            let askAlias = prompt(`Pesan masuk dari ID: ${foreignID}\nBeri nama kontak:`);
-                            saveToContacts(foreignID, askAlias || foreignID);
-                        }
+            db.ref(`chats/${myID}`).on('child_added', snap => {
+                let foreignID = snap.key;
+                if(foreignID === myID) return;
+                
+                // Jika ID chat masuk tidak ada di daftar kontak DAN tidak ada di memori terhapus
+                if(!contacts[foreignID]) {
+                    // Cek apakah ID ini ada di aliasMemory (berarti pernah disimpan tapi dihapus)
+                    // Jika dihapus permanen (aliasMemory di delete), maka tanya nama lagi
+                    if (aliasMemory[foreignID]) {
+                        contacts[foreignID] = aliasMemory[foreignID];
+                        localStorage.setItem('my_contacts', JSON.stringify(contacts));
+                        renderContacts();
+                    } else {
+                        // Jika benar-benar baru atau sudah dihapus permanen dari memori
+                        let askAlias = prompt(`Pesan baru dari ID: ${foreignID}\nBeri nama kontak:`);
+                        saveToContacts(foreignID, askAlias || foreignID);
                     }
-                });
+                }
             });
         }
     </script>
