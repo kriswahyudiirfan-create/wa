@@ -3,379 +3,413 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MyWA - IrfanK Fast Security</title>
+    <title>MyWA iPhone - IrfanK Fast Security</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #0b141a; color: #e9edef; overflow: hidden; }
+        :root { --ios-bg: #000; --ios-dark: #1c1c1e; --apple-blue: #0a84ff; --whatsapp-green: #30d158; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background: #333; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; overflow: hidden; }
+        
+        /* BINGKAI IPHONE */
+        #iphone-frame { 
+            width: 375px; height: 812px; background: var(--ios-bg); 
+            border: 12px solid #444; border-radius: 55px; position: relative; 
+            overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8); 
+        }
+        #notch { 
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%); 
+            width: 150px; height: 30px; background: #000; 
+            border-bottom-left-radius: 18px; border-bottom-right-radius: 18px; z-index: 2001; 
+        }
+
         .hidden { display: none !important; }
 
-        @keyframes smoothEntry { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        /* BOOT SCREEN APPLE */
+        #apple-boot { 
+            position: absolute; inset: 0; background: black; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 3000; transition: 0.8s; 
+        }
+        .apple-logo { width: 55px; filter: invert(1); animation: breathe 2s infinite; }
+        @keyframes breathe { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-        #contact-outer { flex: 1; margin: 10px; border-radius: 15px; position: relative; padding: 2px; overflow: hidden; background: #202c33; }
-        #contact-outer::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, transparent, #00ffcc); animation: rotateBorder 3s linear infinite; z-index: 0; }
-        @keyframes rotateBorder { 100% { transform: rotate(360deg); } }
+        /* LOGIN SCREEN */
+        #auth-ui { padding: 80px 30px; text-align: center; }
+        #auth-ui h2 { font-size: 28px; margin-bottom: 30px; }
+        #auth-ui input { 
+            width: 100%; padding: 15px; margin: 8px 0; border-radius: 12px; 
+            background: #2c2c2e; border: 1px solid #3a3a3c; color: white; outline: none; 
+        }
+        #auth-ui button { 
+            width: 100%; padding: 15px; background: var(--apple-blue); 
+            border: none; border-radius: 12px; color: white; font-weight: bold; margin-top: 15px; 
+        }
 
-        #welcome-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b141a; display: flex; justify-content: center; align-items: center; z-index: 1000; transition: opacity 0.5s; }
-        .welcome-text { font-size: 24px; font-weight: bold; color: #00a884; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-
-        #auth-screen { padding: 40px 20px; text-align: center; height: 100vh; overflow-y: auto; }
-        input[type="text"], input[type="password"] { width: 80%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #2a3942; background: #2a3942; color: white; outline: none; }
-        button { background: #00a884; border: none; padding: 10px 20px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin: 5px; transition: 0.1s; }
-        button:active { transform: scale(0.95); }
+        /* MAIN APP STYLES */
+        #app-content { display: flex; flex-direction: column; height: 100%; padding-top: 35px; }
+        header { 
+            padding: 15px; background: rgba(28, 28, 30, 0.8); 
+            backdrop-filter: blur(15px); border-bottom: 0.5px solid #333; 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
         
-        #app { display: flex; flex-direction: column; height: 100vh; }
-        header { background: #202c33; padding: 15px; text-align: center; position: relative; }
-        #cool-anim { font-size: 14px; color: #00a884; position: absolute; width: 100%; top: 5px; left: 0; animation: slideToggle 2s infinite; }
-        @keyframes slideToggle { 0%, 100% { transform: translateY(-20px); opacity: 0; } 50% { transform: translateY(0); opacity: 1; } }
+        /* STATUS BAR (STORIES) */
+        #status-bar { display: flex; gap: 12px; padding: 15px; overflow-x: auto; scrollbar-width: none; border-bottom: 0.5px solid #222; }
+        .st-circle { min-width: 65px; text-align: center; font-size: 11px; }
+        .st-thumb { 
+            width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--apple-blue); 
+            padding: 2px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; 
+            background: #2c2c2e; font-weight: bold; overflow: hidden;
+        }
 
-        #status-bar { display: flex; overflow-x: auto; padding: 10px; background: #111b21; gap: 10px; border-bottom: 1px solid #222d34; scrollbar-width: none; }
-        .status-circle { min-width: 60px; text-align: center; cursor: pointer; }
-        .status-thumb { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #00a884; display: flex; align-items: center; justify-content: center; font-size: 10px; background: #2a3942; margin: 0 auto; overflow: hidden; }
+        /* CONTACT LIST */
+        .contact-row { 
+            display: flex; padding: 12px 15px; border-bottom: 0.5px solid #222; 
+            align-items: center; cursor: pointer; transition: 0.2s;
+        }
+        .contact-row:active { background: #1c1c1e; }
+        .avatar-box { width: 52px; height: 52px; border-radius: 50%; background: #3a3a3c; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; }
+        .contact-meta { flex: 1; overflow: hidden; }
+        .contact-meta b { font-size: 17px; display: block; margin-bottom: 2px; }
+        .id-label { font-size: 11px; color: #8e8e93; display: block; }
+        .status-info { font-size: 11px; color: var(--whatsapp-green); display: block; margin: 2px 0; }
+        .last-msg-preview { font-size: 13px; color: #8e8e93; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        #contact-container { position: relative; height: 100%; width: 100%; background: #0b141a; border-radius: 12px; overflow-y: auto; padding: 5px; z-index: 1; }
-        .contact-card { background: #111b21; padding: 12px; border-bottom: 1px solid #222d34; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 5px; animation: smoothEntry 0.3s ease-out; }
-        .contact-info { flex: 1; cursor: pointer; }
-        .last-msg { font-size: 13px; color: #00a884; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-        .online-status { font-size: 10px; color: #8696a0; margin-bottom: 2px; }
-        .btn-del { background: none; border: none; color: #ef5350; font-size: 18px; padding: 10px; cursor: pointer; opacity: 0.6; }
+        /* CHAT WINDOW IPHONE */
+        #chat-window { position: absolute; inset: 0; background: #0b141a; z-index: 2100; display: flex; flex-direction: column; padding-top: 35px; }
+        #msg-area { 
+            flex: 1; overflow-y: auto; padding: 15px; 
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+            background-size: contain; display: flex; flex-direction: column;
+        }
+        .bubble { max-width: 75%; padding: 8px 12px; border-radius: 16px; margin-bottom: 4px; font-size: 15px; position: relative; }
+        .bubble.me { align-self: flex-end; background: #005c4b; color: white; border-bottom-right-radius: 4px; }
+        .bubble.them { align-self: flex-start; background: #262d31; color: white; border-bottom-left-radius: 4px; }
+        .bubble .time { font-size: 9px; opacity: 0.6; text-align: right; margin-top: 4px; }
 
-        #chat-window, #status-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b141a; z-index: 100; display: flex; flex-direction: column; }
-        #msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; background-image: radial-gradient(#202c33 0.5px, transparent 0.5px); background-size: 20px 20px; }
-        .msg-bubble { max-width: 80%; padding: 10px; border-radius: 10px; margin-bottom: 8px; position: relative; animation: smoothEntry 0.2s ease-out; color: white; word-wrap: break-word; }
-        .msg-me { align-self: flex-end; background: #005c4b; }
-        .msg-them { align-self: flex-start; background: #202c33; }
-        
-        .input-bar { background: #202c33; padding: 10px; display: flex; align-items: center; }
-        .input-bar input { flex: 1; background: #2a3942; border: none; padding: 12px; border-radius: 8px; color: white; outline: none; }
-        .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; cursor: pointer; }
-        .file-box { background: #2a3942; padding: 10px; border-radius: 8px; display: inline-block; text-decoration: none; color: #00ffcc; font-size: 13px; margin-top: 5px; border: 1px solid #343f46; }
+        /* INPUT BAR */
+        .input-bar { padding: 10px; background: #1c1c1e; display: flex; align-items: center; gap: 10px; }
+        .input-bar input { flex: 1; padding: 10px 15px; border-radius: 20px; background: #2c2c2e; border: none; color: white; outline: none; }
+        .btn-action { width: 35px; height: 35px; border-radius: 50%; border: none; background: var(--apple-blue); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-mic-rec { background: #ff3b30; animation: pulse-red 1s infinite; }
+        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
     </style>
 </head>
-<body onclick="playClickSound()">
+<body>
 
-    <div id="welcome-layer"><div class="welcome-text">SELAMAT DATANG</div></div>
+<div id="iphone-frame">
+    <div id="notch"></div>
 
-    <div id="auth-screen" class="hidden">
-        <h2 id="auth-title">Masuk ke MyWA</h2>
-        <input type="text" id="my-id-input" placeholder="Masukkan ID...">
-        <input type="password" id="my-pw-input" placeholder="Masukkan Password...">
-        <div id="reg-extra" class="hidden">
-            <input type="text" id="my-recovery-input" placeholder="Kata Kunci Pemulihan (Bebas)...">
-            <p style="font-size: 10px; color: #8696a0; margin: 10px;">*Digunakan jika lupa password</p>
-        </div>
-        <br>
-        <button id="btn-main-auth" onclick="handleAuth()">MASUK / DAFTAR</button>
-        <button onclick="forgotPassword()" style="background:none; color:#00a884; font-size:12px;">Lupa Password?</button>
+    <div id="apple-boot">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" class="apple-logo">
     </div>
 
-    <div id="app" class="hidden">
+    <div id="auth-ui" class="hidden">
+        <h2>iMessage</h2>
+        <input type="text" id="login-id" placeholder="Masukkan ID">
+        <input type="password" id="login-pw" placeholder="Password">
+        <div id="reg-box" class="hidden">
+            <input type="text" id="login-recovery" placeholder="Kunci Pemulihan">
+        </div>
+        <button onclick="handleAuth()">Masuk / Daftar</button>
+        <p onclick="forgotPw()" style="color:var(--apple-blue); font-size:12px; margin-top:20px; cursor:pointer">Lupa Password?</p>
+    </div>
+
+    <div id="app-content" class="hidden">
         <header>
-            <div id="cool-anim">SISTEM AKTIF • TERENKRIPSI</div>
-            <h3>Daftar Kontak</h3>
-            <button onclick="openAddContact()" style="position:absolute; right:10px; top:12px;">+ ID</button>
-            <button onclick="logout()" style="position:absolute; left:10px; top:12px; background:none; font-size:12px;">Logout</button>
+            <span onclick="logout()" style="color:var(--apple-blue); font-size:14px">Logout</span>
+            <b style="font-size:18px">WhatsApp</b>
+            <span onclick="addFriend()" style="color:var(--apple-blue); font-size:24px">+</span>
         </header>
-        
+
         <div id="status-bar">
-            <div class="status-circle" onclick="postStatus()">
-                <div class="status-thumb" style="border-style: dashed;">+</div>
-                <small>Status</small>
+            <div class="st-circle" onclick="postStatus()">
+                <div class="st-thumb" style="border-style:dashed">+</div>
+                <span>Status</span>
             </div>
-            <div id="status-list" style="display: flex; gap: 10px;"></div>
+            <div id="status-render-area" style="display:flex; gap:12px"></div>
         </div>
 
-        <div class="search-box" style="padding:10px; background:#111b21;"><input type="text" id="search-input" placeholder="Cari..." oninput="renderContacts()" style="width:100%; padding:8px; background:#2a3942; color:white; border:none; border-radius:5px;"></div>
-        <div id="contact-outer"><div id="contact-container"><div id="list-kontak"></div></div></div>
-    </div>
-
-    <div id="status-viewer" class="hidden" onclick="this.classList.add('hidden')">
-        <div id="status-content" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:20px; text-align:center; font-size:24px; background: linear-gradient(45deg, #00a884, #0b141a);"></div>
+        <div id="contact-list-area" style="flex:1; overflow-y:auto;"></div>
     </div>
 
     <div id="chat-window" class="hidden">
-        <header style="display:flex; align-items:center; background:#202c33; padding:10px;">
-            <button onclick="closeChat()" style="background:none; border:none; color:white; font-size:20px; margin-right:15px;">←</button>
-            <div id="chat-target-info"></div>
+        <header>
+            <span onclick="closeChat()" style="color:var(--apple-blue)">❮ Back</span>
+            <div style="text-align:center">
+                <b id="target-name">Nama</b><br>
+                <small id="target-id-label" style="font-size:9px; color:#8e8e93"></small><br>
+                <small id="target-status-header" style="font-size:10px; color:var(--whatsapp-green)"></small>
+            </div>
+            <span style="width:45px"></span>
         </header>
         <div id="msg-area"></div>
         <div class="input-bar">
-            <label style="margin-right:10px; cursor:pointer; font-size: 20px;">📎<input type="file" id="file-input" class="hidden" onchange="uploadFile()"></label>
-            <input type="text" id="text-input" placeholder="Ketik pesan..." onkeypress="if(event.key==='Enter') sendText()">
-            <button onclick="sendText()">➤</button>
+            <label style="font-size:22px; cursor:pointer">📎<input type="file" id="file-in" class="hidden" onchange="uploadMedia()"></label>
+            <input type="text" id="text-in" placeholder="iMessage" oninput="notifyTyping()">
+            <button onclick="sendText()" class="btn-action">▲</button>
+            <button id="mic-btn" class="btn-action" onmousedown="startVN()" onmouseup="stopVN()" ontouchstart="startVN()" ontouchend="stopVN()">🎤</button>
         </div>
     </div>
 
-    <script>
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playClickSound() {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        }
+    <div id="status-viewer" class="hidden" onclick="this.classList.add('hidden')" style="position:absolute; inset:0; background:black; z-index:4000; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:40px; text-align:center; font-size:24px;">
+        <div id="status-text-content"></div>
+    </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBndqyGrpv7D-gelmif8YELzs-EJj237MA",
-            authDomain: "mywa-irfank.firebaseapp.com",
-            databaseURL: "https://mywa-irfank-default-rtdb.firebaseio.com",
-            projectId: "mywa-irfank",
-            storageBucket: "mywa-irfank.firebasestorage.app",
-            messagingSenderId: "567484997979",
-            appId: "1:567484997979:web:743ea53391552dfde07a7e"
-        };
+</div>
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const storage = firebase.storage();
-        
-        let myID = localStorage.getItem('my_wa_id');
-        let activeChatID = null;
-        let contacts = JSON.parse(localStorage.getItem('my_contacts') || '{}');
-        let aliasMemory = JSON.parse(localStorage.getItem('alias_memory') || '{}');
-        let deletedContacts = JSON.parse(localStorage.getItem('deleted_contacts') || '[]');
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBndqyGrpv7D-gelmif8YELzs-EJj237MA",
+        authDomain: "mywa-irfank.firebaseapp.com",
+        databaseURL: "https://mywa-irfank-default-rtdb.firebaseio.com",
+        projectId: "mywa-irfank",
+        storageBucket: "mywa-irfank.firebasestorage.app",
+        messagingSenderId: "567484997979",
+        appId: "1:567484997979:web:743ea53391552dfde07a7e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const st = firebase.storage();
 
-        function encryptText(t) { try { return btoa(unescape(encodeURIComponent(t))); } catch(e) { return t; } }
-        function decryptText(e) { try { return decodeURIComponent(escape(atob(e))); } catch(err) { return e; } }
+    let myID = localStorage.getItem('session_id');
+    let activeChat = null;
+    let rec; let chunks = [];
 
-        // Start App Fast
+    // DATA ISOLATION PER ID
+    function getContacts() { return JSON.parse(localStorage.getItem(`data_${myID}_contacts`) || '{}'); }
+    function saveContacts(obj) { localStorage.setItem(`data_${myID}_contacts`, JSON.stringify(obj)); }
+
+    // AUTH LOGIC
+    setTimeout(() => {
+        document.getElementById('apple-boot').style.opacity = '0';
         setTimeout(() => {
-            document.getElementById('welcome-layer').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('welcome-layer').classList.add('hidden');
-                if (!myID) document.getElementById('auth-screen').classList.remove('hidden');
-                else startApp();
-            }, 500);
-        }, 1000);
+            document.getElementById('apple-boot').classList.add('hidden');
+            if(!myID) document.getElementById('auth-ui').classList.remove('hidden');
+            else runSystem();
+        }, 800);
+    }, 2000);
 
-        async function handleAuth() {
-            let id = document.getElementById('my-id-input').value.trim();
-            let pw = document.getElementById('my-pw-input').value.trim();
-            if (!id || !pw) return;
+    async function handleAuth() {
+        let id = document.getElementById('login-id').value.trim();
+        let pw = document.getElementById('login-pw').value.trim();
+        if(!id || !pw) return;
 
-            const snap = await db.ref('users/' + id).get();
-            if (snap.exists()) {
-                if (snap.val().pw === pw) proceedLogin(id);
-                else alert("Password Salah!");
+        const snap = await db.ref('users/'+id).get();
+        if(snap.exists()){
+            if(snap.val().pw === pw) { myID = id; localStorage.setItem('session_id', id); location.reload(); }
+            else alert("Password Salah!");
+        } else {
+            let rb = document.getElementById('reg-box');
+            if(rb.classList.contains('hidden')) {
+                rb.classList.remove('hidden');
+                alert("ID Baru! Masukkan kunci pemulihan lalu klik lagi.");
             } else {
-                let regBox = document.getElementById('reg-extra');
-                if (regBox.classList.contains('hidden')) {
-                    regBox.classList.remove('hidden');
-                    document.getElementById('auth-title').innerText = "Daftar ID Baru";
-                    alert("ID belum ada. Isi kata kunci pemulihan & klik Daftar lagi.");
-                } else {
-                    let recovery = document.getElementById('my-recovery-input').value.trim();
-                    if (!recovery) return alert("Isi pemulihan!");
-                    await db.ref('users/' + id).set({ pw: pw, recovery: recovery, status: 'online', lastSeen: Date.now() });
-                    proceedLogin(id);
-                }
+                let recov = document.getElementById('login-recovery').value;
+                await db.ref('users/'+id).set({ pw, recovery: recov, status: 'online', lastSeen: Date.now() });
+                myID = id; localStorage.setItem('session_id', id); location.reload();
             }
         }
+    }
 
-        async function forgotPassword() {
-            let id = prompt("ID Anda:");
-            if (!id) return;
-            const snap = await db.ref('users/' + id).get();
-            if (!snap.exists()) return alert("ID Tidak Ada!");
-            let answer = prompt("Kata Kunci Pemulihan:");
-            if (answer === snap.val().recovery) {
-                let newPw = prompt("Password Baru:");
-                if (newPw) {
-                    await db.ref('users/' + id).update({ pw: newPw });
-                    alert("Berhasil!");
-                }
-            } else alert("Salah!");
-        }
+    function logout() {
+        db.ref('users/'+myID).update({ status: 'offline', lastSeen: Date.now() });
+        localStorage.removeItem('session_id'); location.reload();
+    }
 
-        function proceedLogin(id) {
-            localStorage.setItem('my_wa_id', id);
-            myID = id;
-            startApp();
-        }
+    function runSystem() {
+        document.getElementById('auth-ui').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+        
+        db.ref('users/'+myID).update({ status: 'online', lastSeen: Date.now() });
+        db.ref('users/'+myID).onDisconnect().update({ status: 'offline', lastSeen: Date.now() });
 
-        function logout() {
-            db.ref('users/' + myID).update({ status: 'offline', lastSeen: Date.now() });
-            localStorage.removeItem('my_wa_id');
-            location.reload();
-        }
+        renderList();
+        listenStatus();
 
-        function startApp() {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
-            renderContacts();
-            listenGlobal();
-            listenStatus();
-            db.ref('users/' + myID).update({ status: 'online', lastSeen: Date.now() });
-            db.ref('users/' + myID).onDisconnect().update({ status: 'offline', lastSeen: Date.now() });
-        }
-
-        function openAddContact() {
-            let target = prompt("ID Tujuan:");
-            if (!target || target == myID) return;
-            deletedContacts = deletedContacts.filter(v => v !== target);
-            localStorage.setItem('deleted_contacts', JSON.stringify(deletedContacts));
-            let alias = prompt("Nama Alias:");
-            saveToContacts(target, alias);
-        }
-
-        function saveToContacts(id, alias) {
-            contacts[id] = alias || id;
-            aliasMemory[id] = alias || id;
-            localStorage.setItem('my_contacts', JSON.stringify(contacts));
-            localStorage.setItem('alias_memory', JSON.stringify(aliasMemory));
-            renderContacts();
-        }
-
-        function deleteContact(id) {
-            if (confirm("Hapus?")) {
-                delete contacts[id];
-                if (!deletedContacts.includes(id)) deletedContacts.push(id);
-                localStorage.setItem('my_contacts', JSON.stringify(contacts));
-                localStorage.setItem('deleted_contacts', JSON.stringify(deletedContacts));
-                renderContacts();
+        // Auto-detect incoming chat
+        db.ref('chats/'+myID).on('child_added', s => {
+            let cid = s.key;
+            let c = getContacts();
+            if(!c[cid] && cid !== myID) {
+                c[cid] = cid;
+                saveContacts(c);
+                renderList();
             }
-        }
+        });
+    }
 
-        function renderContacts() {
-            const list = document.getElementById('list-kontak');
-            const search = document.getElementById('search-input').value.toLowerCase();
-            list.innerHTML = '';
-            for (let id in contacts) {
-                if (id.includes(search) || contacts[id].toLowerCase().includes(search)) {
-                    list.innerHTML += `
-                        <div class="contact-card">
-                            <div class="contact-info" onclick="openChat('${id}')">
-                                <b>${contacts[id]}</b>
-                                <div class="online-status" id="stat-${id}">...</div>
-                                <div class="last-msg" id="last-${id}">...</div>
-                            </div>
-                            <button class="btn-del" onclick="deleteContact('${id}')">✕</button>
+    function renderList() {
+        const area = document.getElementById('contact-list-area');
+        const c = getContacts();
+        area.innerHTML = '';
+        for(let id in c) {
+            area.innerHTML += `
+                <div class="contact-row" onclick="openChat('${id}')">
+                    <div class="avatar-box">${c[id].substring(0,1).toUpperCase()}</div>
+                    <div class="contact-meta">
+                        <b>${c[id]}</b>
+                        <span class="id-label">ID: ${id}</span>
+                        <span class="status-info" id="li-${id}">...</span>
+                        <div class="last-msg-preview" id="preview-${id}">Memuat pesan...</div>
+                    </div>
+                </div>`;
+            
+            // Detail Online/Typing/LastSeen
+            db.ref('users/'+id).on('value', snap => {
+                let u = snap.val(); let el = document.getElementById(`li-${id}`);
+                if(!el || !u) return;
+                if(u.typing === myID) el.innerHTML = "Sedang mengetik...";
+                else if(u.status === 'online') el.innerHTML = "● Online";
+                else {
+                    let d = new Date(u.lastSeen);
+                    el.innerText = `Terakhir dilihat: ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} jam ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`;
+                }
+            });
+
+            // Preview Chat Terakhir
+            db.ref(`chats/${myID}/${id}`).limitToLast(1).on('value', snap => {
+                snap.forEach(m => {
+                    let val = m.val();
+                    let txt = val.type === 'text' ? atob(val.msg) : (val.type === 'vn' ? "🎤 Pesan Suara" : "📎 Media");
+                    document.getElementById(`preview-${id}`).innerText = txt;
+                });
+            });
+        }
+    }
+
+    function openChat(id) {
+        activeChat = id;
+        document.getElementById('chat-window').classList.remove('hidden');
+        document.getElementById('target-name').innerText = getContacts()[id] || id;
+        document.getElementById('target-id-label').innerText = `ID: ${id}`;
+        
+        // Header Status
+        db.ref('users/'+id).on('value', snap => {
+            let u = snap.val(); let h = document.getElementById('target-status-header');
+            if(u.typing === myID) h.innerText = "Sedang mengetik...";
+            else if(u.status === 'online') h.innerText = "Online";
+            else {
+                let d = new Date(u.lastSeen);
+                h.innerText = `Terakhir dilihat: ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours()}:${d.getMinutes()}`;
+            }
+        });
+
+        // Load Messages
+        db.ref(`chats/${myID}/${id}`).on('value', snap => {
+            const box = document.getElementById('msg-area');
+            box.innerHTML = '';
+            snap.forEach(m => {
+                let d = m.val(); let isMe = d.sender === myID;
+                let c = "";
+                if(d.type === 'text') c = decodeURIComponent(escape(atob(d.msg)));
+                else if(d.type === 'vn') c = `<audio controls style="width:200px"><source src="${d.url}"></audio>`;
+                else if(d.type === 'img') c = `<a href="${d.url}" download><img src="${d.url}" style="max-width:200px;border-radius:10px"></a>`;
+                else c = `<a href="${d.url}" download style="color:cyan">📄 ${d.name}</a>`;
+
+                box.innerHTML += `<div class="bubble ${isMe?'me':'them'}">${c}<div class="time">${d.fullTime}</div></div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        });
+    }
+
+    function closeChat() { activeChat = null; db.ref('users/'+myID).update({typing:false}); document.getElementById('chat-window').classList.add('hidden'); }
+
+    function notifyTyping() {
+        if(!activeChat) return;
+        db.ref('users/'+myID).update({ typing: activeChat });
+        clearTimeout(window.tOut);
+        window.tOut = setTimeout(() => db.ref('users/'+myID).update({ typing: false }), 2000);
+    }
+
+    function sendText() {
+        let val = document.getElementById('text-in').value; if(!val) return;
+        let d = new Date();
+        let fullTime = `${d.getHours()}:${d.getMinutes()} - ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+        let m = { msg: btoa(unescape(encodeURIComponent(val))), type: 'text', sender: myID, fullTime, ts: Date.now() };
+        db.ref(`chats/${myID}/${activeChat}`).push(m);
+        if(activeChat !== myID) db.ref(`chats/${activeChat}/${myID}`).push(m);
+        document.getElementById('text-in').value = '';
+    }
+
+    // VOICE NOTE LOGIC
+    async function startVN() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            rec = new MediaRecorder(stream);
+            chunks = [];
+            rec.ondataavailable = e => chunks.push(e.data);
+            rec.start();
+            document.getElementById('mic-btn').classList.add('btn-mic-rec');
+        } catch(e) { alert("Izinkan Mic!"); }
+    }
+
+    function stopVN() {
+        if(!rec || rec.state === 'inactive') return;
+        rec.stop();
+        document.getElementById('mic-btn').classList.remove('btn-mic-rec');
+        rec.onstop = async () => {
+            const blob = new Blob(chunks, { type: 'audio/webm' });
+            const ref = st.ref(`uploads/vn_${Date.now()}`);
+            await ref.put(blob);
+            const url = await ref.getDownloadURL();
+            let d = new Date();
+            let m = { url, type: 'vn', sender: myID, fullTime: `${d.getHours()}:${d.getMinutes()} - ${d.getDate()}/${d.getMonth()+1}`, ts: Date.now() };
+            db.ref(`chats/${myID}/${activeChat}`).push(m);
+            if(activeChat !== myID) db.ref(`chats/${activeChat}/${myID}`).push(m);
+        };
+    }
+
+    function uploadMedia() {
+        let f = document.getElementById('file-in').files[0]; if(!f) return;
+        let isImg = f.type.includes('image');
+        st.ref(`uploads/${Date.now()}`).put(f).then(r => r.ref.getDownloadURL()).then(url => {
+            let d = new Date();
+            let m = { url, type: isImg?'img':'file', name: f.name, sender: myID, fullTime: `${d.getHours()}:${d.getMinutes()}`, ts: Date.now() };
+            db.ref(`chats/${myID}/${activeChat}`).push(m);
+            if(activeChat !== myID) db.ref(`chats/${activeChat}/${myID}`).push(m);
+        });
+    }
+
+    // STATUS SYSTEM
+    function postStatus() {
+        let msg = prompt("Tulis Status:"); if(!msg) return;
+        db.ref('status').push({ sender: myID, text: msg, ts: Date.now(), expire: Date.now() + 86400000 });
+    }
+
+    function listenStatus() {
+        db.ref('status').on('value', snap => {
+            const render = document.getElementById('status-render-area');
+            render.innerHTML = '';
+            let now = Date.now();
+            snap.forEach(s => {
+                let d = s.val();
+                if(now < d.expire) {
+                    render.innerHTML += `
+                        <div class="st-circle" onclick="viewSt('${d.text}')">
+                            <div class="st-thumb">${d.sender.substring(0,2).toUpperCase()}</div>
+                            <span>${d.sender === myID ? 'Saya' : (getContacts()[d.sender] || d.sender)}</span>
                         </div>`;
-                    
-                    db.ref(`chats/${myID}/${id}`).limitToLast(1).on('value', s => {
-                        let txt = "No chat";
-                        s.forEach(c => txt = c.val().type === 'text' ? decryptText(c.val().text) : "📎 Media");
-                        let el = document.getElementById(`last-${id}`);
-                        if(el) el.innerText = txt;
-                    });
-
-                    db.ref(`users/${id}`).on('value', snap => {
-                        let u = snap.val();
-                        let el = document.getElementById(`stat-${id}`);
-                        if(!el || !u) return;
-                        if(u.status === 'online') el.innerHTML = `<span style="color:#00ffcc">● Online</span>`;
-                        else {
-                            let d = new Date(u.lastSeen);
-                            el.innerText = `Liliat: ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
-                        }
-                    });
-                }
-            }
-        }
-
-        function openChat(id) {
-            activeChatID = id;
-            document.getElementById('chat-window').classList.remove('hidden');
-            document.getElementById('chat-target-info').innerHTML = `<b>${contacts[id] || id}</b>`;
-            loadMessages(id);
-        }
-
-        function closeChat() { activeChatID = null; document.getElementById('chat-window').classList.add('hidden'); }
-
-        function appendMsgToUI(m) {
-            const area = document.getElementById('msg-area');
-            let isMe = m.sender === myID;
-            let content = "";
-            if(m.type === 'text') content = decryptText(m.text);
-            else if(m.type === 'image') content = `<a href="${m.url}" download><img src="${m.url}" class="chat-img"></a>`;
-            else content = `<a href="${m.url}" download class="file-box">📄 ${m.fileName}</a>`;
-
-            area.innerHTML += `<div class="msg-bubble ${isMe ? 'msg-me' : 'msg-them'}">${content}<div style="font-size:10px;text-align:right;opacity:0.7;">${m.time}</div></div>`;
-            area.scrollTop = area.scrollHeight;
-        }
-
-        function sendText() {
-            let txt = document.getElementById('text-input').value;
-            if(!txt) return;
-            let now = new Date();
-            let m = { text: encryptText(txt), type: 'text', sender: myID, time: now.getHours().toString().padStart(2,'0')+":"+now.getMinutes().toString().padStart(2,'0'), ts: Date.now() };
-            appendMsgToUI(m); // Instant UI
-            db.ref(`chats/${myID}/${activeChatID}`).push(m);
-            if(activeChatID !== myID) db.ref(`chats/${activeChatID}/${myID}`).push(m);
-            document.getElementById('text-input').value = '';
-        }
-
-        function loadMessages(target) {
-            const area = document.getElementById('msg-area');
-            db.ref(`chats/${myID}/${target}`).off();
-            db.ref(`chats/${myID}/${target}`).on('value', snap => {
-                area.innerHTML = '';
-                snap.forEach(c => appendMsgToUI(c.val()));
+                } else db.ref('status/'+s.key).remove();
             });
-        }
+        });
+    }
 
-        function uploadFile() {
-            let file = document.getElementById('file-input').files[0];
-            if(!file) return;
-            let isImg = file.type.includes('image');
-            let reader = new FileReader();
-            reader.onload = (e) => {
-                let m = { url: e.target.result, type: isImg?'image':'file', fileName: file.name, sender: myID, time: "Kirim...", ts: Date.now() };
-                appendMsgToUI(m);
-                storage.ref(`uploads/${Date.now()}`).put(file).then(s => s.ref.getDownloadURL()).then(url => {
-                    m.url = url;
-                    db.ref(`chats/${myID}/${activeChatID}`).push(m);
-                    if(activeChatID !== myID) db.ref(`chats/${activeChatID}/${myID}`).push(m);
-                });
-            };
-            reader.readAsDataURL(file);
-        }
+    function viewSt(txt) {
+        document.getElementById('status-viewer').classList.remove('hidden');
+        document.getElementById('status-text-content').innerText = txt;
+    }
 
-        function listenGlobal() {
-            db.ref(`chats/${myID}`).on('child_added', snap => {
-                let foreignID = snap.key;
-                if (foreignID === myID || contacts[foreignID] || deletedContacts.includes(foreignID)) return;
-                let alias = aliasMemory[foreignID] || prompt(`Ada chat dari ID: ${foreignID}\nSimpan sebagai:`);
-                saveToContacts(foreignID, alias || foreignID);
-            });
-        }
+    function addFriend() {
+        let id = prompt("Masukkan ID Teman:"); if(!id || id === myID) return;
+        let al = prompt("Beri Nama:");
+        let c = getContacts(); c[id] = al || id;
+        saveContacts(c); renderList();
+    }
+</script>
 
-        function postStatus() {
-            let msg = prompt("Status:");
-            if (!msg) return;
-            db.ref('status').push({ sender: myID, text: msg, ts: Date.now(), expire: Date.now() + 86400000 });
-        }
-
-        function listenStatus() {
-            db.ref('status').on('value', snap => {
-                const list = document.getElementById('status-list');
-                list.innerHTML = '';
-                let now = Date.now();
-                snap.forEach(c => {
-                    let s = c.val();
-                    if (now < s.expire) {
-                        list.innerHTML += `
-                            <div class="status-circle" onclick="viewStatus('${s.text}', '${s.sender}')">
-                                <div class="status-thumb">${s.sender.substring(0,2)}</div>
-                                <small>${s.sender === myID ? 'Saya' : (contacts[s.sender] || s.sender)}</small>
-                            </div>`;
-                    } else db.ref('status/' + c.key).remove();
-                });
-            });
-        }
-
-        function viewStatus(txt, sender) {
-            document.getElementById('status-viewer').classList.remove('hidden');
-            document.getElementById('status-content').innerHTML = `<small>Status ${sender}</small><br><br>${txt}`;
-        }
-    </script>
 </body>
 </html>
