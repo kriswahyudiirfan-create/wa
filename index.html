@@ -34,6 +34,7 @@
         @keyframes slideToggle { 0%, 100% { transform: translateY(-20px); opacity: 0; } 50% { transform: translateY(0); opacity: 1; } }
 
         #status-bar { display: flex; overflow-x: auto; padding: 10px; background: #111b21; gap: 10px; border-bottom: 1px solid #222d34; scrollbar-width: none; }
+        #status-bar::-webkit-scrollbar { display: none; }
         .status-circle { min-width: 60px; text-align: center; cursor: pointer; }
         .status-thumb { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #00a884; display: flex; align-items: center; justify-content: center; font-size: 10px; background: #2a3942; margin: 0 auto; overflow: hidden; }
 
@@ -55,6 +56,7 @@
         .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; cursor: pointer; }
         .vn-btn { background: #00a884; border-radius: 50%; width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; cursor: pointer; user-select: none; }
         .vn-recording { background: #ef5350 !important; animation: pulse 0.5s infinite; }
+        .file-box { display: block; background: #2a3942; padding: 8px; border-radius: 5px; color: #00ffcc; text-decoration: none; font-size: 13px; }
     </style>
 </head>
 <body onclick="playClickSound()">
@@ -144,7 +146,6 @@
         let mediaRecorder;
         let audioChunks = [];
 
-        // --- SISTEM PENYIMPANAN TERPISAH (1 ID 1 STORAGE) ---
         function getMyStorage(key) { return JSON.parse(localStorage.getItem(myID + '_' + key) || '{}'); }
         function saveMyStorage(key, data) { localStorage.setItem(myID + '_' + key, JSON.stringify(data)); }
 
@@ -267,7 +268,7 @@
                         else if(u.status === 'online') el.innerHTML = `<span style="color:#00ffcc">● Online</span>`;
                         else {
                             let d = new Date(u.lastSeen);
-                            el.innerHTML = `<span style="color:#8696a0">Terakhir dilihat: ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}</span>`;
+                            el.innerHTML = `<span style="color:#8696a0">Terakhir dilihat: ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}</span>`;
                         }
                     });
                 }
@@ -293,7 +294,7 @@
                 else if(u.status === 'online') el.innerText = "Online";
                 else {
                     let d = new Date(u.lastSeen);
-                    el.innerText = `Terakhir dilihat: ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+                    el.innerText = `Terakhir dilihat: ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
                 }
             });
 
@@ -343,7 +344,7 @@
             let txt = document.getElementById('text-input').value;
             if(!txt) return;
             let d = new Date();
-            let timeFull = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} - ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+            let timeFull = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
             let m = { text: encryptText(txt), type: 'text', sender: myID, timeFull: timeFull, ts: Date.now() };
             db.ref(`chats/${myID}/${activeChatID}`).push(m);
             if(activeChatID !== myID) db.ref(`chats/${activeChatID}/${myID}`).push(m);
@@ -357,12 +358,13 @@
             db.ref(`chats/${myID}/${target}`).on('value', snap => {
                 area.innerHTML = '';
                 snap.forEach(c => appendMsgToUI(c.val()));
+                area.scrollTop = area.scrollHeight;
             });
         }
 
-        // --- FITUR VOICE NOTE (TEKAN REKAM, LEPAS KIRIM) ---
         async function startRecording() {
             try {
+                if (mediaRecorder && mediaRecorder.state === "recording") return;
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
@@ -384,7 +386,7 @@
                 
                 uploadTask.then(s => s.ref.getDownloadURL()).then(url => {
                     let d = new Date();
-                    let timeFull = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} - ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+                    let timeFull = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
                     let m = { url: url, type: 'vn', sender: myID, timeFull: timeFull, ts: Date.now() };
                     db.ref(`chats/${myID}/${activeChatID}`).push(m);
                     if(activeChatID !== myID) db.ref(`chats/${activeChatID}/${myID}`).push(m);
@@ -398,7 +400,7 @@
             let isImg = file.type.includes('image');
             storage.ref(`uploads/${Date.now()}_${file.name}`).put(file).then(s => s.ref.getDownloadURL()).then(url => {
                 let d = new Date();
-                let timeFull = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} - ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+                let timeFull = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
                 let m = { url: url, type: isImg?'image':'file', fileName: file.name, sender: myID, timeFull: timeFull, ts: Date.now() };
                 db.ref(`chats/${myID}/${activeChatID}`).push(m);
                 if(activeChatID !== myID) db.ref(`chats/${activeChatID}/${myID}`).push(m);
@@ -410,7 +412,7 @@
                 let foreignID = snap.key;
                 let contacts = getMyStorage('contacts');
                 if (foreignID === myID || contacts[foreignID]) return;
-                let alias = prompt(`Ada chat dari ID baru: ${foreignID}\nSimpan sebagai:`);
+                let alias = prompt(`Chat baru dari: ${foreignID}\nSimpan sebagai:`);
                 contacts[foreignID] = alias || foreignID;
                 saveMyStorage('contacts', contacts);
                 renderContacts();
@@ -418,7 +420,7 @@
         }
 
         function postStatus() {
-            let msg = prompt("Tulis Status (24 Jam):");
+            let msg = prompt("Tulis Status (Aktif 24 Jam):");
             if (!msg) return;
             db.ref('status').push({ sender: myID, text: msg, ts: Date.now(), expire: Date.now() + 86400000 });
         }
@@ -434,7 +436,7 @@
                     if (now < s.expire) {
                         list.innerHTML += `
                             <div class="status-circle" onclick="viewStatus('${s.text}', '${s.sender}')">
-                                <div class="status-thumb">${s.sender.substring(0,2)}</div>
+                                <div class="status-thumb">${s.sender.substring(0,2).toUpperCase()}</div>
                                 <small>${s.sender === myID ? 'Saya' : (contacts[s.sender] || s.sender)}</small>
                             </div>`;
                     } else db.ref('status/' + c.key).remove();
